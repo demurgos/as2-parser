@@ -55,19 +55,20 @@ pub struct Script {
 
 impl_serialize!(Script, SerializeScript);
 
-impl traits::Script<OwnedSyntax> for Script {
-  #[cfg(not(feature = "gat"))]
-  fn stmts<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, Stmt>> + 'a> {
-    Box::new(self.stmts.iter().map(|stmt| traits::MaybeOwned::Borrowed(stmt)))
-  }
+impl traits::Script for Script {
+  type Ast = OwnedSyntax;
 
   #[allow(clippy::type_complexity)]
   #[cfg(feature = "gat")]
-  type Stmts<'a> = core::iter::Map<core::slice::Iter<'a, Stmt>, for<'r> fn(&'r Stmt) -> traits::MaybeOwned<'r, Stmt>>;
+  type StmtIter<'a> = core::iter::Map<core::slice::Iter<'a, Stmt>, for<'r> fn(&'r Stmt) -> traits::MaybeOwned<'r, Stmt>>;
 
   #[cfg(feature = "gat")]
-  fn stmts(&self) -> Self::Stmts<'_> {
+  fn stmts(&self) -> Self::StmtIter<'_> {
     self.stmts.iter().map(|s| traits::MaybeOwned::Borrowed(s))
+  }
+  #[cfg(not(feature = "gat"))]
+  fn stmts<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, Stmt>> + 'a> {
+    Box::new(self.stmts.iter().map(|stmt| traits::MaybeOwned::Borrowed(stmt)))
   }
 }
 
@@ -84,7 +85,9 @@ pub enum Stmt {
   Trace(TraceStmt),
 }
 
-impl traits::Stmt<OwnedSyntax> for Stmt {
+impl traits::Stmt for Stmt {
+  type Ast = OwnedSyntax;
+
   fn cast(&self) -> traits::StmtCast<OwnedSyntax> {
     match self {
       Stmt::Break(ref s) => traits::StmtCast::Break(traits::MaybeOwned::Borrowed(s)),
@@ -100,14 +103,14 @@ pub struct BreakStmt {
   pub loc: (),
 }
 
-impl traits::BreakStmt<OwnedSyntax> for BreakStmt {}
+impl traits::BreakStmt for BreakStmt {}
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
 pub struct ErrorStmt {
   pub loc: (),
 }
 
-impl traits::ErrorStmt<OwnedSyntax> for ErrorStmt {}
+impl traits::ErrorStmt for ErrorStmt {}
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
 pub struct ExprStmt {
@@ -115,10 +118,16 @@ pub struct ExprStmt {
   pub expr: Box<Expr>,
 }
 
-impl traits::ExprStmt<OwnedSyntax> for ExprStmt {
-  fn expr(&self) -> traits::MaybeOwned<Expr> {
-    traits::MaybeOwned::Borrowed(&self.expr)
+impl ExprStmt {
+  fn _expr(&self) -> &Expr {
+    &self.expr
   }
+}
+
+impl traits::ExprStmt for ExprStmt {
+  type Ast = OwnedSyntax;
+
+  maybe_gat_accessor!(expr, _expr, ref Expr, ref Expr);
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
@@ -127,10 +136,15 @@ pub struct TraceStmt {
   pub value: Box<Expr>,
 }
 
-impl traits::TraceStmt<OwnedSyntax> for TraceStmt {
-  fn value(&self) -> &Expr {
+impl TraceStmt {
+  fn _value(&self) -> &Expr {
     &self.value
   }
+}
+
+impl traits::TraceStmt for TraceStmt {
+  type Ast = OwnedSyntax;
+  maybe_gat_accessor!(value, _value, ref Expr, ref Expr);
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
@@ -138,7 +152,9 @@ pub struct VarDecl {
   pub loc: (),
 }
 
-impl traits::VarDecl<OwnedSyntax> for VarDecl {}
+impl traits::VarDecl for VarDecl {
+  type Ast = OwnedSyntax;
+}
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
 pub enum Expr {
@@ -338,13 +354,12 @@ impl traits::SeqExpr for SeqExpr {
   type Ast = OwnedSyntax;
   #[allow(clippy::type_complexity)]
   #[cfg(feature = "gat")]
-  type Exprs<'a> = core::iter::Map<core::slice::Iter<'a, Expr>, for<'r> fn(&'r Expr) -> traits::MaybeOwned<'r, Expr>>;
+  type ExprIter<'a> = core::iter::Map<core::slice::Iter<'a, Expr>, for<'r> fn(&'r Expr) -> traits::MaybeOwned<'r, Expr>>;
 
   #[cfg(feature = "gat")]
-  fn exprs(&self) -> Self::Exprs<'_> {
+  fn exprs(&self) -> Self::ExprIter<'_> {
     self.exprs.iter().map(|e| traits::MaybeOwned::Borrowed(e))
   }
-
   #[cfg(not(feature = "gat"))]
   fn exprs<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, Expr>> + 'a> {
     Box::new(self.exprs.iter().map(|e| traits::MaybeOwned::Borrowed(e)))

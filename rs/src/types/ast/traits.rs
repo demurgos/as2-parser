@@ -3,15 +3,15 @@ use std::borrow::Cow;
 
 /// Describes all the elements of a syntax.
 pub trait Syntax: Sized {
-  type Script: Script<Self>;
+  type Script: Script<Ast = Self>;
 
-  type Stmt: Stmt<Self>;
-  type BreakStmt: BreakStmt<Self>;
+  type Stmt: Stmt<Ast = Self>;
+  type BreakStmt: BreakStmt;
   /// Represents invalid statement
-  type ErrorStmt: ErrorStmt<Self>;
-  type ExprStmt: ExprStmt<Self>;
-  type TraceStmt: TraceStmt<Self>;
-  type VarDecl: VarDecl<Self>;
+  type ErrorStmt: ErrorStmt;
+  type ExprStmt: ExprStmt<Ast = Self>;
+  type TraceStmt: TraceStmt<Ast = Self>;
+  type VarDecl: VarDecl<Ast = Self>;
 
   type Expr: Expr<Ast = Self>;
   type AssignExpr: AssignExpr<Ast = Self>;
@@ -59,28 +59,30 @@ impl<T> std::ops::Deref for MaybeOwned<'_, T> {
 }
 
 /// Script root node
-pub trait Script<S: Syntax> {
-  #[cfg(not(feature = "gat"))]
-  fn stmts<'a>(&'a self) -> Box<dyn Iterator<Item = MaybeOwned<'a, S::Stmt>> + 'a>;
+pub trait Script {
+  type Ast: Syntax;
+  #[cfg(feature = "gat")]
+  type StmtIter<'a>: Iterator<Item = MaybeOwned<'a, <Self::Ast as Syntax>::Stmt>>;
 
-  // TODO: Use the following code once rust-lang/rust#30472 is fixed. (It a
+  #[cfg(feature = "gat")]
+  fn stmts(&self) -> Self::StmtIter<'_>;
+  #[cfg(not(feature = "gat"))]
+  fn stmts<'a>(&'a self) -> Box<dyn Iterator<Item = MaybeOwned<'a, <Self::Ast as Syntax>::Stmt>> + 'a>;
+
+  // TODO: Use the following code once rust-lang/rust#30472 is fixed.
   // #[cfg(feature = "gat")]
   // type StmtRef<'a>;
   //
   // #[cfg(feature = "gat")]
   // type Stmts<'a>: Iterator<Item = &Self::StmtRef<'a>>;
-
-  #[cfg(feature = "gat")]
-  type Stmts<'a>: Iterator<Item = MaybeOwned<'a, S::Stmt>>;
-
-  #[cfg(feature = "gat")]
-  fn stmts(&self) -> Self::Stmts<'_>;
 }
 
 /// Trait representing any ActionScript statement
-pub trait Stmt<S: Syntax> {
+pub trait Stmt {
+  type Ast: Syntax;
+
   /// Downcast the statement to its concrete type.
-  fn cast(&self) -> StmtCast<S>;
+  fn cast(&self) -> StmtCast<Self::Ast>;
 }
 
 /// Represents the result of downcasting an expression.
@@ -92,19 +94,42 @@ pub enum StmtCast<'a, S: Syntax> {
   VarDecl(MaybeOwned<'a, S::VarDecl>),
 }
 
-pub trait BreakStmt<S: Syntax> {}
+pub trait BreakStmt {}
 
-pub trait ErrorStmt<S: Syntax> {}
+pub trait ErrorStmt {}
 
-pub trait ExprStmt<S: Syntax> {
-  fn expr(&self) -> MaybeOwned<S::Expr>;
+pub trait ExprStmt {
+  type Ast: Syntax;
+
+  #[cfg(feature = "gat")]
+  fn expr(&self) -> <Self::Ast as Syntax>::ExprRef<'_>;
+  #[cfg(not(feature = "gat"))]
+  fn expr<'a>(&'a self) -> Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>;
 }
 
-pub trait TraceStmt<S: Syntax> {
-  fn value(&self) -> &S::Expr;
+pub trait TraceStmt {
+  type Ast: Syntax;
+
+  #[cfg(feature = "gat")]
+  fn value(&self) -> <Self::Ast as Syntax>::ExprRef<'_>;
+  #[cfg(not(feature = "gat"))]
+  fn value<'a>(&'a self) -> Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>;
 }
 
-pub trait VarDecl<S: Syntax> {}
+/// Variable declaration statement
+pub trait VarDecl {
+  type Ast: Syntax;
+}
+
+// /// A single variable declarator inside a variable declaration statement
+// pub trait VarDeclarator {
+//   type Ast: Syntax;
+//
+//   #[cfg(feature = "gat")]
+//   fn init(&self) -> Option<<Self::Ast as Syntax>::ExprRef<'_>>;
+//   #[cfg(not(feature = "gat"))]
+//   fn init<'a>(&'a self) -> Option<Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>>;
+// }
 
 /// Trait representing any ActionScript expression
 pub trait Expr {
@@ -282,12 +307,11 @@ pub trait NumLit {
 /// Corresponds to two or more expressions separated by commas.
 pub trait SeqExpr {
   type Ast: Syntax;
+  #[cfg(feature = "gat")]
+  type ExprIter<'a>: Iterator<Item = MaybeOwned<'a, <Self::Ast as Syntax>::Expr>>;
 
   #[cfg(feature = "gat")]
-  type Exprs<'a>: Iterator<Item = MaybeOwned<'a, <Self::Ast as Syntax>::Expr>>;
-
-  #[cfg(feature = "gat")]
-  fn exprs(&self) -> Self::Exprs<'_>;
+  fn exprs(&self) -> Self::ExprIter<'_>;
   #[cfg(not(feature = "gat"))]
   fn exprs<'a>(&'a self) -> Box<dyn Iterator<Item = MaybeOwned<'a, <Self::Ast as Syntax>::Expr>> + 'a>;
 }

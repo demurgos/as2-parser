@@ -521,22 +521,23 @@ impl TryFrom<SyntaxNode> for Script {
   }
 }
 
-impl traits::Script<ConcreteSyntax> for Script {
+impl traits::Script for Script {
+  type Ast = ConcreteSyntax;
+  #[cfg(feature = "gat")]
+  type StmtIter<'a> = ScriptStmts;
+
+  #[cfg(feature = "gat")]
+  fn stmts(&self) -> Self::StmtIter<'_> {
+    ScriptStmts {
+      inner: self.syntax.children(),
+    }
+  }
+
   #[cfg(not(feature = "gat"))]
   fn stmts<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, Stmt>> + 'a> {
     Box::new(ScriptStmts {
       inner: self.syntax.children(),
     })
-  }
-
-  #[cfg(feature = "gat")]
-  type Stmts<'a> = ScriptStmts;
-
-  #[cfg(feature = "gat")]
-  fn stmts(&self) -> Self::Stmts<'_> {
-    ScriptStmts {
-      inner: self.syntax.children(),
-    }
   }
 }
 
@@ -576,7 +577,9 @@ impl TryFrom<SyntaxNode> for Stmt {
   }
 }
 
-impl traits::Stmt<ConcreteSyntax> for Stmt {
+impl traits::Stmt for Stmt {
+  type Ast = ConcreteSyntax;
+
   fn cast(&self) -> StmtCast<ConcreteSyntax> {
     match self.syntax.kind() {
       SyntaxKind::NodeExprStmt => traits::StmtCast::Expr(traits::MaybeOwned::Owned(ExprStmt {
@@ -598,7 +601,7 @@ pub struct BreakStmt {
   syntax: SyntaxNode,
 }
 
-impl traits::BreakStmt<ConcreteSyntax> for BreakStmt {}
+impl traits::BreakStmt for BreakStmt {}
 
 /// Represents an expression statement backed by a concrete syntax node.
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -606,16 +609,22 @@ pub struct ExprStmt {
   syntax: SyntaxNode,
 }
 
-impl traits::ExprStmt<ConcreteSyntax> for ExprStmt {
-  fn expr(&self) -> traits::MaybeOwned<Expr> {
+impl ExprStmt {
+  fn _expr(&self) -> Expr {
     for child in self.syntax.children() {
       match Expr::try_from(child) {
-        Ok(e) => return traits::MaybeOwned::Owned(e),
+        Ok(e) => return e,
         Err(()) => {}
       }
     }
     panic!("InvalidExpressionNode");
   }
+}
+
+impl traits::ExprStmt for ExprStmt {
+  type Ast = ConcreteSyntax;
+
+  maybe_gat_accessor!(expr, _expr, Expr, Expr);
 }
 
 /// Represents a break statement backed by a concrete syntax node.
@@ -624,7 +633,7 @@ pub struct ErrorStmt {
   syntax: SyntaxNode,
 }
 
-impl traits::ErrorStmt<ConcreteSyntax> for ErrorStmt {}
+impl traits::ErrorStmt for ErrorStmt {}
 
 /// Represents an abstract trace statement backed by a concrete syntax node.
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -632,10 +641,20 @@ pub struct TraceStmt {
   syntax: SyntaxNode,
 }
 
-impl traits::TraceStmt<ConcreteSyntax> for TraceStmt {
-  fn value(&self) -> &<ConcreteSyntax as Syntax>::Expr {
-    unimplemented!()
+impl TraceStmt {
+  fn _value(&self) -> Expr {
+    let left_node = self.syntax.first_child().unwrap();
+    match Expr::try_from(left_node) {
+      Ok(e) => e,
+      Err(()) => unimplemented!(),
+    }
   }
+}
+
+impl traits::TraceStmt for TraceStmt {
+  type Ast = ConcreteSyntax;
+
+  maybe_gat_accessor!(value, _value, Expr, Expr);
 }
 
 /// Represents a break statement backed by a concrete syntax node.
@@ -644,7 +663,9 @@ pub struct VarDecl {
   syntax: SyntaxNode,
 }
 
-impl traits::VarDecl<ConcreteSyntax> for VarDecl {}
+impl traits::VarDecl for VarDecl {
+  type Ast = ConcreteSyntax;
+}
 
 /// Represents an expression backed by a concrete syntax node.
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
@@ -1061,20 +1082,19 @@ pub struct SeqExpr {
 impl traits::SeqExpr for SeqExpr {
   type Ast = ConcreteSyntax;
   #[cfg(feature = "gat")]
-  type Exprs<'a> = ExprIter;
+  type ExprIter<'a> = ExprIter;
 
+  #[cfg(feature = "gat")]
+  fn exprs(&self) -> Self::ExprIter<'_> {
+    ExprIter {
+      inner: trim_paren(self.syntax.clone()).children(),
+    }
+  }
   #[cfg(not(feature = "gat"))]
   fn exprs<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, Expr>> + 'a> {
     Box::new(ExprIter {
       inner: trim_paren(self.syntax.clone()).children(),
     })
-  }
-
-  #[cfg(feature = "gat")]
-  fn exprs(&self) -> Self::Exprs<'_> {
-    ExprIter {
-      inner: trim_paren(self.syntax.clone()).children(),
-    }
   }
 }
 
