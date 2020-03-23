@@ -110,6 +110,8 @@ impl<Ast: Syntax> Serialize for SerializeExpr<'_, Ast> {
       ExprCast::NumLit(e) => SerializeNumLit(&*e).serialize(serializer),
       ExprCast::Seq(e) => SerializeSeqExpr::<Ast>(&*e).serialize(serializer),
       ExprCast::StrLit(e) => SerializeStrLit(&*e).serialize(serializer),
+      ExprCast::Update(e) => SerializeUpdateExpr(&*e).serialize(serializer),
+      ExprCast::Unary(e) => SerializeUnaryExpr(&*e).serialize(serializer),
     }
   }
 }
@@ -131,8 +133,9 @@ pub struct SerializeBinExpr<'a, T: BinExpr>(pub &'a T);
 impl<T: BinExpr> Serialize for SerializeBinExpr<'_, T> {
   fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
     use serde::ser::SerializeStruct;
-    let mut struct_serializer = serializer.serialize_struct("BinExpr", 3)?;
+    let mut struct_serializer = serializer.serialize_struct("BinExpr", 4)?;
     struct_serializer.serialize_field("type", "BinExpr")?;
+    struct_serializer.serialize_field("op", &self.0.op())?;
     struct_serializer.serialize_field("left", &SerializeExpr::<T::Ast>(&*self.0.left()))?;
     struct_serializer.serialize_field("right", &SerializeExpr::<T::Ast>(&*self.0.right()))?;
     struct_serializer.end()
@@ -273,6 +276,32 @@ impl<T: StrLit> Serialize for SerializeStrLit<'_, T> {
     let mut struct_serializer = serializer.serialize_struct("StrLit", 2)?;
     struct_serializer.serialize_field("type", "StrLit")?;
     struct_serializer.serialize_field("value", &self.0.value())?;
+    struct_serializer.end()
+  }
+}
+
+pub struct SerializeUpdateExpr<'a, T: UpdateExpr>(pub &'a T);
+
+impl<T: UpdateExpr> Serialize for SerializeUpdateExpr<'_, T> {
+  fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
+    use serde::ser::SerializeStruct;
+    let mut struct_serializer = serializer.serialize_struct("UpdateExpr", 3)?;
+    struct_serializer.serialize_field("type", "UpdateExpr")?;
+    struct_serializer.serialize_field("op", &self.0.op())?;
+    struct_serializer.serialize_field("arg", &SerializeExpr::<T::Ast>(&self.0.arg()))?;
+    struct_serializer.end()
+  }
+}
+
+pub struct SerializeUnaryExpr<'a, T: UnaryExpr>(pub &'a T);
+
+impl<T: UnaryExpr> Serialize for SerializeUnaryExpr<'_, T> {
+  fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
+    use serde::ser::SerializeStruct;
+    let mut struct_serializer = serializer.serialize_struct("UnaryExpr", 3)?;
+    struct_serializer.serialize_field("type", "UnaryExpr")?;
+    struct_serializer.serialize_field("op", &self.0.op())?;
+    struct_serializer.serialize_field("arg", &SerializeExpr::<T::Ast>(&self.0.arg()))?;
     struct_serializer.end()
   }
 }

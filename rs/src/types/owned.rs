@@ -36,6 +36,8 @@ impl traits::Syntax for OwnedSyntax {
   type NumLit = NumLit;
   type SeqExpr = SeqExpr;
   type StrLit = StrLit;
+  type UpdateExpr = UpdateExpr;
+  type UnaryExpr = UnaryExpr;
 
   #[cfg(feature = "gat")]
   type ExprRef<'r> = &'r Expr;
@@ -312,6 +314,7 @@ pub struct NumLit {
 }
 
 impl core::cmp::PartialEq for NumLit {
+  #[allow(clippy::unit_cmp)]
   fn eq(&self, other: &Self) -> bool {
     self.loc == other.loc && self.value.to_ne_bytes() == other.value.to_ne_bytes()
   }
@@ -358,6 +361,52 @@ impl traits::StrLit for StrLit {
   fn value(&self) -> Cow<str> {
     Cow::Borrowed(&self.value)
   }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
+pub struct UnaryExpr {
+  pub loc: (),
+  pub op: traits::UnaryOp,
+  pub arg: Box<Expr>,
+}
+
+impl UnaryExpr {
+  fn _arg(&self) -> &Expr {
+    &self.arg
+  }
+}
+
+impl traits::UnaryExpr for UnaryExpr {
+  type Ast = OwnedSyntax;
+
+  fn op(&self) -> traits::UnaryOp {
+    self.op
+  }
+
+  maybe_gat_accessor!(arg, _arg, ref Expr, ref Expr);
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
+pub struct UpdateExpr {
+  pub loc: (),
+  pub op: traits::UpdateOp,
+  pub arg: Box<Expr>,
+}
+
+impl UpdateExpr {
+  fn _arg(&self) -> &Expr {
+    &self.arg
+  }
+}
+
+impl traits::UpdateExpr for UpdateExpr {
+  type Ast = OwnedSyntax;
+
+  fn op(&self) -> traits::UpdateOp {
+    self.op
+  }
+
+  maybe_gat_accessor!(arg, _arg, ref Expr, ref Expr);
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]

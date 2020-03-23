@@ -28,6 +28,8 @@ impl<'a> traits::Syntax for BorrowedSyntax<'a> {
   type NumLit = NumLit;
   type SeqExpr = SeqExpr<'a>;
   type StrLit = StrLit<'a>;
+  type UpdateExpr = UpdateExpr<'a>;
+  type UnaryExpr = UnaryExpr<'a>;
 
   #[cfg(feature = "gat")]
   type ExprRef<'r> = &'r Expr<'r>;
@@ -45,14 +47,14 @@ pub struct Script<'a> {
 
 impl<'s> traits::Script<BorrowedSyntax<'s>> for Script<'s> {
   #[cfg(not(feature = "gat"))]
-  fn stmts<'a>(&'a self) -> Box<dyn Iterator<Item=traits::MaybeOwned<'a, Stmt<'s>>> + 'a> {
+  fn stmts<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, Stmt<'s>>> + 'a> {
     Box::new(self.stmts.iter().map(|stmt| traits::MaybeOwned::Borrowed(stmt)))
   }
 
   #[allow(clippy::type_complexity)]
   #[cfg(feature = "gat")]
   type Stmts<'a> =
-  core::iter::Map<core::slice::Iter<'a, Stmt<'a>>, for<'r> fn(&'r Stmt<'a>) -> traits::MaybeOwned<'r, Stmt<'a>>>;
+    core::iter::Map<core::slice::Iter<'a, Stmt<'a>>, for<'r> fn(&'r Stmt<'a>) -> traits::MaybeOwned<'r, Stmt<'a>>>;
 
   #[cfg(feature = "gat")]
   fn stmts(&self) -> Self::Stmts<'_> {
@@ -228,7 +230,7 @@ impl<'a> traits::CallExpr for CallExpr<'a> {
   #[allow(clippy::type_complexity)]
   #[cfg(feature = "gat")]
   type ExprIter<'b> =
-  core::iter::Map<core::slice::Iter<'b, Expr<'b>>, for<'r> fn(&'r Expr<'b>) -> traits::MaybeOwned<'r, Expr<'b>>>;
+    core::iter::Map<core::slice::Iter<'b, Expr<'b>>, for<'r> fn(&'r Expr<'b>) -> traits::MaybeOwned<'r, Expr<'b>>>;
 
   maybe_gat_accessor!(callee, _callee, ref Expr<'_>, ref Expr<'a>);
 
@@ -238,7 +240,7 @@ impl<'a> traits::CallExpr for CallExpr<'a> {
   }
 
   #[cfg(not(feature = "gat"))]
-  fn args<'r>(&'r self) -> Box<dyn Iterator<Item=traits::MaybeOwned<'r, Expr<'a>>> + 'r> {
+  fn args<'r>(&'r self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'r, Expr<'a>>> + 'r> {
     Box::new(self.args.iter().map(|e| traits::MaybeOwned::Borrowed(e)))
   }
 }
@@ -300,6 +302,7 @@ pub struct NumLit {
 }
 
 impl core::cmp::PartialEq for NumLit {
+  #[allow(clippy::unit_cmp)]
   fn eq(&self, other: &Self) -> bool {
     self.loc == other.loc && self.value.to_ne_bytes() == other.value.to_ne_bytes()
   }
@@ -325,7 +328,7 @@ impl<'s> traits::SeqExpr for SeqExpr<'s> {
   #[allow(clippy::type_complexity)]
   #[cfg(feature = "gat")]
   type Exprs<'a> =
-  core::iter::Map<core::slice::Iter<'a, Expr<'a>>, for<'r> fn(&'r Expr<'a>) -> traits::MaybeOwned<'r, Expr<'a>>>;
+    core::iter::Map<core::slice::Iter<'a, Expr<'a>>, for<'r> fn(&'r Expr<'a>) -> traits::MaybeOwned<'r, Expr<'a>>>;
 
   #[cfg(feature = "gat")]
   fn exprs(&self) -> Self::Exprs<'_> {
@@ -333,7 +336,7 @@ impl<'s> traits::SeqExpr for SeqExpr<'s> {
   }
 
   #[cfg(not(feature = "gat"))]
-  fn exprs<'a>(&'a self) -> Box<dyn Iterator<Item=traits::MaybeOwned<'a, Expr<'s>>> + 'a> {
+  fn exprs<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, Expr<'s>>> + 'a> {
     Box::new(self.exprs.iter().map(|e| traits::MaybeOwned::Borrowed(e)))
   }
 }
@@ -348,6 +351,52 @@ impl traits::StrLit for StrLit<'_> {
   fn value(&self) -> Cow<str> {
     Cow::Borrowed(self.value)
   }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash)]
+pub struct UnaryExpr<'a> {
+  pub loc: (),
+  pub op: traits::UnaryOp,
+  pub arg: &'a Expr<'a>,
+}
+
+impl<'a> UnaryExpr<'a> {
+  fn _arg(&self) -> &Expr<'a> {
+    self.arg
+  }
+}
+
+impl<'a> traits::UnaryExpr for UnaryExpr<'a> {
+  type Ast = BorrowedSyntax<'a>;
+
+  fn op(&self) -> traits::UnaryOp {
+    self.op
+  }
+
+  maybe_gat_accessor!(arg, _arg, ref Expr<'_>, ref Expr<'a>);
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash)]
+pub struct UpdateExpr<'a> {
+  pub loc: (),
+  pub op: traits::UpdateOp,
+  pub arg: &'a Expr<'a>,
+}
+
+impl<'a> UpdateExpr<'a> {
+  fn _arg(&self) -> &Expr<'a> {
+    self.arg
+  }
+}
+
+impl<'a> traits::UpdateExpr for UpdateExpr<'a> {
+  type Ast = BorrowedSyntax<'a>;
+
+  fn op(&self) -> traits::UpdateOp {
+    self.op
+  }
+
+  maybe_gat_accessor!(arg, _arg, ref Expr<'_>, ref Expr<'a>);
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash)]

@@ -51,6 +51,9 @@ pub enum SyntaxKind {
   /// The keyword `try`
   TokenTry,
 
+  /// The keyword `typeof`
+  TokenTypeof,
+
   /// The keyword `var`
   TokenVar,
 
@@ -124,6 +127,9 @@ pub enum SyntaxKind {
 
   /// `!==`
   TokenNotEqEq,
+
+  /// `~`
+  TokenTilde,
 
   /// `!`
   TokenExcl,
@@ -223,7 +229,7 @@ pub enum SyntaxKind {
   /// Conditional expression
   NodeCondExpr,
 
-  /// Binary expression
+  /// Binary expression or logical expression
   NodeInfixExpr,
 
   /// Prefix expression
@@ -375,6 +381,30 @@ impl SyntaxKind {
     }
   }
 
+  pub fn is_unary_op(self) -> bool {
+    use SyntaxKind::*;
+    match self {
+      TokenExcl | TokenMinus | TokenPlus => true,
+      _ => false,
+    }
+  }
+
+  pub fn is_prefix_update_op(self) -> bool {
+    use SyntaxKind::*;
+    match self {
+      TokenDelete | TokenMinusMinus | TokenPlusPlus => true,
+      _ => false,
+    }
+  }
+
+  pub fn is_postfix_update_op(self) -> bool {
+    use SyntaxKind::*;
+    match self {
+      TokenMinusMinus | TokenPlusPlus => true,
+      _ => false,
+    }
+  }
+
   pub fn is_bin_op(self) -> bool {
     use SyntaxKind::*;
     match self {
@@ -382,6 +412,10 @@ impl SyntaxKind {
       | TokenSlash | TokenStar => true,
       _ => false,
     }
+  }
+
+  pub fn is_prefix_op(self) -> bool {
+    self.is_unary_op() || self.is_prefix_update_op()
   }
 
   pub fn is_infix_op(self) -> bool {
@@ -447,6 +481,8 @@ impl traits::Syntax for ConcreteSyntax {
   type NumLit = NumLit;
   type SeqExpr = SeqExpr;
   type StrLit = StrLit;
+  type UpdateExpr = UpdateExpr;
+  type UnaryExpr = UnaryExpr;
 
   #[cfg(feature = "gat")]
   type ExprRef<'r> = Expr;
@@ -636,6 +672,34 @@ fn trim_paren(mut node: SyntaxNode) -> SyntaxNode {
   }
 }
 
+fn find_postfix_op(symbols: &mut SyntaxElementChildren<As2Lang>) -> SyntaxToken {
+  for symbol in symbols {
+    match symbol {
+      rowan::NodeOrToken::Token(t) => {
+        if t.kind().is_postfix_update_op() {
+          return t;
+        }
+      }
+      rowan::NodeOrToken::Node(_) => {}
+    }
+  }
+  panic!("NoPostfixOp");
+}
+
+fn find_prefix_op(symbols: &mut SyntaxElementChildren<As2Lang>) -> SyntaxToken {
+  for symbol in symbols {
+    match symbol {
+      rowan::NodeOrToken::Token(t) => {
+        if t.kind().is_prefix_op() {
+          return t;
+        }
+      }
+      rowan::NodeOrToken::Node(_) => {}
+    }
+  }
+  panic!("NoPrefixOp");
+}
+
 fn find_infix_op(symbols: &mut SyntaxElementChildren<As2Lang>) -> SyntaxToken {
   let mut found_left: bool = false;
   for symbol in symbols {
@@ -657,7 +721,8 @@ impl traits::Expr for Expr {
   type Ast = ConcreteSyntax;
 
   fn cast(&self) -> ExprCast<ConcreteSyntax> {
-    match trim_paren(self.syntax.clone()).kind() {
+    let inner_syntax = trim_paren(self.syntax.clone());
+    match inner_syntax.kind() {
       SyntaxKind::NodeAssignExpr => traits::ExprCast::Assign(traits::MaybeOwned::Owned(AssignExpr {
         syntax: self.syntax.clone(),
       })),
@@ -671,7 +736,7 @@ impl traits::Expr for Expr {
         syntax: self.syntax.clone(),
       })),
       SyntaxKind::NodeInfixExpr => {
-        let op_kind = find_infix_op(&mut self.syntax.children_with_tokens()).kind();
+        let op_kind = find_infix_op(&mut inner_syntax.children_with_tokens()).kind();
         match op_kind {
           k if k.is_logical_op() => traits::ExprCast::Logical(traits::MaybeOwned::Owned(LogicalExpr {
             syntax: self.syntax.clone(),
@@ -685,6 +750,27 @@ impl traits::Expr for Expr {
       SyntaxKind::NodeNumLit => traits::ExprCast::NumLit(traits::MaybeOwned::Owned(NumLit {
         syntax: self.syntax.clone(),
       })),
+      SyntaxKind::NodePostfixExpr => {
+        let op_kind = find_postfix_op(&mut inner_syntax.children_with_tokens()).kind();
+        match op_kind {
+          k if k.is_postfix_update_op() => traits::ExprCast::Update(traits::MaybeOwned::Owned(UpdateExpr {
+            syntax: self.syntax.clone(),
+          })),
+          _ => unimplemented!(),
+        }
+      }
+      SyntaxKind::NodePrefixExpr => {
+        let op_kind = find_prefix_op(&mut inner_syntax.children_with_tokens()).kind();
+        match op_kind {
+          k if k.is_unary_op() => traits::ExprCast::Unary(traits::MaybeOwned::Owned(UnaryExpr {
+            syntax: self.syntax.clone(),
+          })),
+          k if k.is_prefix_update_op() => traits::ExprCast::Update(traits::MaybeOwned::Owned(UpdateExpr {
+            syntax: self.syntax.clone(),
+          })),
+          _ => unimplemented!(),
+        }
+      }
       SyntaxKind::NodeSeqExpr => traits::ExprCast::Seq(traits::MaybeOwned::Owned(SeqExpr {
         syntax: self.syntax.clone(),
       })),
@@ -784,7 +870,14 @@ impl traits::BinExpr for BinExpr {
     match op_kind {
       SyntaxKind::TokenPlus => traits::BinOp::Add,
       SyntaxKind::TokenAmp => traits::BinOp::BitAnd,
-      _ => unimplemented!(),
+      SyntaxKind::TokenPipe => traits::BinOp::BitOr,
+      SyntaxKind::TokenCaret => traits::BinOp::BitXor,
+      SyntaxKind::TokenEqEq => traits::BinOp::Equals,
+      SyntaxKind::TokenLt => traits::BinOp::Less,
+      SyntaxKind::TokenLtLt => traits::BinOp::LeftShift,
+      SyntaxKind::TokenStar => traits::BinOp::Multiply,
+      SyntaxKind::TokenEqEqEq => traits::BinOp::StrictEquals,
+      e => unimplemented!("{:?}", e),
     }
   }
 
@@ -956,7 +1049,7 @@ impl traits::NumLit for NumLit {
 fn parse_num_lit(text: &str) -> f64 {
   use core::str::FromStr;
   // TODO: Add support for hex
-  return f64::from_str(text).expect(&format!("{:?}", text));
+  f64::from_str(text).unwrap()
 }
 
 /// Represents a sequence expression backed by a concrete syntax node.
@@ -1084,6 +1177,90 @@ impl traits::StrLit for StrLit {
   }
 }
 
+/// Represents a unary expression backed by a concrete syntax node.
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct UnaryExpr {
+  syntax: SyntaxNode,
+}
+
+impl UnaryExpr {
+  fn _arg(&self) -> Expr {
+    let inner_syntax = trim_paren(self.syntax.clone());
+    let arg_node = inner_syntax.first_child().unwrap();
+    match Expr::try_from(arg_node) {
+      Ok(e) => e,
+      Err(()) => unimplemented!(),
+    }
+  }
+}
+
+impl traits::UnaryExpr for UnaryExpr {
+  type Ast = ConcreteSyntax;
+
+  fn op(&self) -> traits::UnaryOp {
+    let inner_syntax = trim_paren(self.syntax.clone());
+    let op_kind = find_prefix_op(&mut inner_syntax.children_with_tokens()).kind();
+    match op_kind {
+      SyntaxKind::TokenTilde => traits::UnaryOp::BitNot,
+      SyntaxKind::TokenMinus => traits::UnaryOp::Neg,
+      SyntaxKind::TokenExcl => traits::UnaryOp::Not,
+      SyntaxKind::TokenPlus => traits::UnaryOp::ToNum,
+      SyntaxKind::TokenTypeof => traits::UnaryOp::TypeOf,
+      SyntaxKind::TokenVoid => traits::UnaryOp::Void,
+      _ => unreachable!(),
+    }
+  }
+
+  maybe_gat_accessor!(arg, _arg, Expr, Expr);
+}
+
+/// Represents an update expression backed by a concrete syntax node.
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct UpdateExpr {
+  syntax: SyntaxNode,
+}
+
+impl UpdateExpr {
+  fn _arg(&self) -> Expr {
+    let inner_syntax = trim_paren(self.syntax.clone());
+    let arg_node = inner_syntax.first_child().unwrap();
+    match Expr::try_from(arg_node) {
+      Ok(e) => e,
+      Err(()) => unimplemented!(),
+    }
+  }
+}
+
+impl traits::UpdateExpr for UpdateExpr {
+  type Ast = ConcreteSyntax;
+
+  fn op(&self) -> traits::UpdateOp {
+    let inner_syntax = trim_paren(self.syntax.clone());
+    match inner_syntax.kind() {
+      SyntaxKind::NodePostfixExpr => {
+        let op_kind = find_postfix_op(&mut inner_syntax.children_with_tokens()).kind();
+        match op_kind {
+          SyntaxKind::TokenMinusMinus => traits::UpdateOp::PostDec,
+          SyntaxKind::TokenPlusPlus => traits::UpdateOp::PostInc,
+          _ => unreachable!(),
+        }
+      }
+      SyntaxKind::NodePrefixExpr => {
+        let op_kind = find_prefix_op(&mut inner_syntax.children_with_tokens()).kind();
+        match op_kind {
+          SyntaxKind::TokenDelete => traits::UpdateOp::Delete,
+          SyntaxKind::TokenMinusMinus => traits::UpdateOp::PreDec,
+          SyntaxKind::TokenPlusPlus => traits::UpdateOp::PreInc,
+          _ => unreachable!(),
+        }
+      }
+      _ => unreachable!(),
+    }
+  }
+
+  maybe_gat_accessor!(arg, _arg, Expr, Expr);
+}
+
 fn unescape_string(quoted: &str) -> Option<String> {
   let content = find_quoted_content(quoted)?;
   let str_content = &quoted[content.range];
@@ -1198,6 +1375,6 @@ mod tests {
 
   #[test]
   fn test_syntax_kind_variant_count() {
-    assert_eq!(SyntaxKind::VARIANT_COUNT, 75);
+    assert_eq!(SyntaxKind::VARIANT_COUNT, 77);
   }
 }

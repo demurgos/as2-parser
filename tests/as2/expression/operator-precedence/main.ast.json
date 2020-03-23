@@ -230,6 +230,7 @@
             },
             {
               "type": "BinExpr",
+              "op": "|",
               "left": {
                 "type": "NumLit",
                 "value": 2.0
@@ -252,6 +253,7 @@
           "exprs": [
             {
               "type": "BinExpr",
+              "op": "|",
               "left": {
                 "type": "NumLit",
                 "value": 1.0
@@ -282,6 +284,7 @@
             },
             {
               "type": "BinExpr",
+              "op": "^",
               "left": {
                 "type": "NumLit",
                 "value": 2.0
@@ -304,6 +307,7 @@
           "exprs": [
             {
               "type": "BinExpr",
+              "op": "^",
               "left": {
                 "type": "NumLit",
                 "value": 1.0
@@ -334,6 +338,7 @@
             },
             {
               "type": "BinExpr",
+              "op": "&",
               "left": {
                 "type": "NumLit",
                 "value": 2.0
@@ -356,6 +361,7 @@
           "exprs": [
             {
               "type": "BinExpr",
+              "op": "&",
               "left": {
                 "type": "NumLit",
                 "value": 1.0
@@ -386,6 +392,7 @@
             },
             {
               "type": "BinExpr",
+              "op": "==",
               "left": {
                 "type": "NumLit",
                 "value": 2.0
@@ -408,6 +415,7 @@
           "exprs": [
             {
               "type": "BinExpr",
+              "op": "==",
               "left": {
                 "type": "NumLit",
                 "value": 1.0
@@ -438,6 +446,7 @@
             },
             {
               "type": "BinExpr",
+              "op": "<",
               "left": {
                 "type": "NumLit",
                 "value": 2.0
@@ -460,6 +469,7 @@
           "exprs": [
             {
               "type": "BinExpr",
+              "op": "<",
               "left": {
                 "type": "NumLit",
                 "value": 1.0
@@ -490,6 +500,7 @@
             },
             {
               "type": "BinExpr",
+              "op": "<<",
               "left": {
                 "type": "NumLit",
                 "value": 2.0
@@ -512,6 +523,7 @@
           "exprs": [
             {
               "type": "BinExpr",
+              "op": "<<",
               "left": {
                 "type": "NumLit",
                 "value": 1.0
@@ -542,6 +554,7 @@
             },
             {
               "type": "BinExpr",
+              "op": "+",
               "left": {
                 "type": "NumLit",
                 "value": 2.0
@@ -564,6 +577,7 @@
           "exprs": [
             {
               "type": "BinExpr",
+              "op": "+",
               "left": {
                 "type": "NumLit",
                 "value": 1.0
@@ -594,6 +608,7 @@
             },
             {
               "type": "BinExpr",
+              "op": "*",
               "left": {
                 "type": "NumLit",
                 "value": 2.0
@@ -616,6 +631,7 @@
           "exprs": [
             {
               "type": "BinExpr",
+              "op": "*",
               "left": {
                 "type": "NumLit",
                 "value": 1.0
@@ -645,7 +661,12 @@
               "value": 1.0
             },
             {
-              "type": "ErrorExpr"
+              "type": "UpdateExpr",
+              "op": "delete",
+              "arg": {
+                "type": "IdentExpr",
+                "name": "z"
+              }
             }
           ]
         }
@@ -659,7 +680,12 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "UpdateExpr",
+              "op": "delete",
+              "arg": {
+                "type": "IdentExpr",
+                "name": "z"
+              }
             },
             {
               "type": "NumLit",
@@ -681,7 +707,12 @@
               "value": 1.0
             },
             {
-              "type": "ErrorExpr"
+              "type": "UnaryExpr",
+              "op": "+",
+              "arg": {
+                "type": "NumLit",
+                "value": 2.0
+              }
             }
           ]
         }
@@ -695,7 +726,12 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "UnaryExpr",
+              "op": "+",
+              "arg": {
+                "type": "NumLit",
+                "value": 1.0
+              }
             },
             {
               "type": "NumLit",
@@ -717,7 +753,12 @@
               "value": 1.0
             },
             {
-              "type": "ErrorExpr"
+              "type": "UpdateExpr",
+              "op": "++_",
+              "arg": {
+                "type": "IdentExpr",
+                "name": "x"
+              }
             }
           ]
         }
@@ -731,7 +772,12 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "UpdateExpr",
+              "op": "++_",
+              "arg": {
+                "type": "IdentExpr",
+                "name": "x"
+              }
             },
             {
               "type": "NumLit",
@@ -753,7 +799,12 @@
               "value": 1.0
             },
             {
-              "type": "ErrorExpr"
+              "type": "UpdateExpr",
+              "op": "_++",
+              "arg": {
+                "type": "IdentExpr",
+                "name": "x"
+              }
             }
           ]
         }
@@ -767,7 +818,12 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "UpdateExpr",
+              "op": "_++",
+              "arg": {
+                "type": "IdentExpr",
+                "name": "x"
+              }
             },
             {
               "type": "NumLit",
@@ -918,7 +974,21 @@
       "expr": {
         "type": "AssignExpr",
         "value": {
-          "type": "ErrorExpr"
+          "type": "UpdateExpr",
+          "op": "++_",
+          "arg": {
+            "type": "SeqExpr",
+            "exprs": [
+              {
+                "type": "IdentExpr",
+                "name": "x"
+              },
+              {
+                "type": "IdentExpr",
+                "name": "y"
+              }
+            ]
+          }
         }
       }
     }

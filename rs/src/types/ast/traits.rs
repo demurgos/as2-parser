@@ -24,6 +24,8 @@ pub trait Syntax: Sized {
   type NumLit: NumLit;
   type SeqExpr: SeqExpr<Ast = Self>;
   type StrLit: StrLit;
+  type UpdateExpr: UpdateExpr<Ast = Self>;
+  type UnaryExpr: UnaryExpr<Ast = Self>;
 
   #[cfg(feature = "gat")]
   type ExprRef<'a>: core::ops::Deref<Target = Self::Expr>;
@@ -124,6 +126,8 @@ pub enum ExprCast<'a, S: Syntax> {
   NumLit(MaybeOwned<'a, S::NumLit>),
   Seq(MaybeOwned<'a, S::SeqExpr>),
   StrLit(MaybeOwned<'a, S::StrLit>),
+  Unary(MaybeOwned<'a, S::UnaryExpr>),
+  Update(MaybeOwned<'a, S::UpdateExpr>),
 }
 
 pub trait AssignExpr {
@@ -290,6 +294,71 @@ pub trait SeqExpr {
 
 pub trait StrLit {
   fn value(&self) -> Cow<str>;
+}
+
+pub trait UnaryExpr {
+  type Ast: Syntax;
+
+  fn op(&self) -> UnaryOp;
+
+  #[cfg(feature = "gat")]
+  fn arg(&self) -> <Self::Ast as Syntax>::ExprRef<'_>;
+  #[cfg(not(feature = "gat"))]
+  fn arg<'a>(&'a self) -> Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>;
+}
+
+/// Represents all the unary operators.
+#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum UnaryOp {
+  /// Prefix unary operator `~`
+  #[serde(rename = "~")]
+  BitNot,
+  /// Prefix unary operator `!`
+  #[serde(rename = "!")]
+  Not,
+  /// Prefix unary operator `-`
+  #[serde(rename = "-")]
+  Neg,
+  /// Prefix unary operator `+`
+  #[serde(rename = "+")]
+  ToNum,
+  /// Prefix unary operator `typeof`
+  #[serde(rename = "typeof")]
+  TypeOf,
+  /// Prefix unary operator `void`
+  #[serde(rename = "void")]
+  Void,
+}
+
+pub trait UpdateExpr {
+  type Ast: Syntax;
+
+  fn op(&self) -> UpdateOp;
+
+  #[cfg(feature = "gat")]
+  fn arg(&self) -> <Self::Ast as Syntax>::ExprRef<'_>;
+  #[cfg(not(feature = "gat"))]
+  fn arg<'a>(&'a self) -> Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>;
+}
+
+/// Represents all the update operators.
+#[derive(Copy, Clone, Debug, Ord, PartialOrd, Eq, PartialEq, Hash, Serialize, Deserialize)]
+pub enum UpdateOp {
+  /// Prefix update operator `delete
+  #[serde(rename = "delete")]
+  Delete,
+  /// Prefix update operator `--`
+  #[serde(rename = "--_")]
+  PreDec,
+  /// Prefix update operator `++`
+  #[serde(rename = "++_")]
+  PreInc,
+  /// Postfix update operator `--`
+  #[serde(rename = "_--")]
+  PostDec,
+  /// Postfix update operator `++`
+  #[serde(rename = "_++")]
+  PostInc,
 }
 
 /// Trait representing any ActionScript pattern (assignment left-hand side)
