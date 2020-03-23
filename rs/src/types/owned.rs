@@ -28,10 +28,12 @@ impl traits::Syntax for OwnedSyntax {
   type Expr = Expr;
   type AssignExpr = AssignExpr;
   type BinExpr = BinExpr;
+  type BoolLit = BoolLit;
   type CallExpr = CallExpr;
   type ErrorExpr = ErrorExpr;
   type IdentExpr = IdentExpr;
   type LogicalExpr = LogicalExpr;
+  type NumLit = NumLit;
   type SeqExpr = SeqExpr;
   type StrLit = StrLit;
 
@@ -210,6 +212,18 @@ impl traits::BinExpr for BinExpr {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
+pub struct BoolLit {
+  pub loc: (),
+  pub value: bool,
+}
+
+impl traits::BoolLit for BoolLit {
+  fn value(&self) -> bool {
+    self.value
+  }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
 pub struct CallExpr {
   pub loc: (),
   pub callee: Box<Expr>,
@@ -289,6 +303,26 @@ impl traits::LogicalExpr for LogicalExpr {
 
   maybe_gat_accessor!(left, _left, ref Expr, ref Expr);
   maybe_gat_accessor!(right, _right, ref Expr, ref Expr);
+}
+
+#[derive(Debug, Clone, Deserialize)]
+pub struct NumLit {
+  pub loc: (),
+  pub value: f64,
+}
+
+impl core::cmp::PartialEq for NumLit {
+  fn eq(&self, other: &Self) -> bool {
+    self.loc == other.loc && self.value.to_ne_bytes() == other.value.to_ne_bytes()
+  }
+}
+
+impl core::cmp::Eq for NumLit {}
+
+impl traits::NumLit for NumLit {
+  fn value(&self) -> f64 {
+    self.value
+  }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]

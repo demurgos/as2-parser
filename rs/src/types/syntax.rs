@@ -439,10 +439,12 @@ impl traits::Syntax for ConcreteSyntax {
   type Expr = Expr;
   type AssignExpr = AssignExpr;
   type BinExpr = BinExpr;
+  type BoolLit = BoolLit;
   type CallExpr = CallExpr;
   type ErrorExpr = ErrorExpr;
   type IdentExpr = IdentExpr;
   type LogicalExpr = LogicalExpr;
+  type NumLit = NumLit;
   type SeqExpr = SeqExpr;
   type StrLit = StrLit;
 
@@ -659,6 +661,9 @@ impl traits::Expr for Expr {
       SyntaxKind::NodeAssignExpr => traits::ExprCast::Assign(traits::MaybeOwned::Owned(AssignExpr {
         syntax: self.syntax.clone(),
       })),
+      SyntaxKind::NodeBoolLit => traits::ExprCast::BoolLit(traits::MaybeOwned::Owned(BoolLit {
+        syntax: self.syntax.clone(),
+      })),
       SyntaxKind::NodeCallExpr => traits::ExprCast::Call(traits::MaybeOwned::Owned(CallExpr {
         syntax: self.syntax.clone(),
       })),
@@ -677,6 +682,9 @@ impl traits::Expr for Expr {
           _ => unreachable!(),
         }
       }
+      SyntaxKind::NodeNumLit => traits::ExprCast::NumLit(traits::MaybeOwned::Owned(NumLit {
+        syntax: self.syntax.clone(),
+      })),
       SyntaxKind::NodeSeqExpr => traits::ExprCast::Seq(traits::MaybeOwned::Owned(SeqExpr {
         syntax: self.syntax.clone(),
       })),
@@ -784,6 +792,34 @@ impl traits::BinExpr for BinExpr {
   maybe_gat_accessor!(right, _right, Expr, Expr);
 }
 
+/// Represents a boolean literal backed by a concrete syntax node.
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct BoolLit {
+  syntax: SyntaxNode,
+}
+
+impl TryFrom<SyntaxNode> for BoolLit {
+  type Error = ();
+
+  fn try_from(syntax: SyntaxNode) -> Result<Self, Self::Error> {
+    match syntax.kind() {
+      SyntaxKind::NodeBoolLit => Ok(BoolLit { syntax }),
+      _ => Err(()),
+    }
+  }
+}
+
+impl traits::BoolLit for BoolLit {
+  fn value(&self) -> bool {
+    let token = self.syntax.first_token().unwrap();
+    match token.kind() {
+      SyntaxKind::TokenFalse => false,
+      SyntaxKind::TokenTrue => true,
+      _ => panic!(),
+    }
+  }
+}
+
 /// Represents a call expression backed by a concrete syntax node.
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct CallExpr {
@@ -845,7 +881,9 @@ pub struct IdentExpr {
 
 impl traits::IdentExpr for IdentExpr {
   fn name(&self) -> Cow<str> {
-    unimplemented!()
+    let token = trim_paren(self.syntax.clone()).first_token().unwrap();
+    let text = token.text().as_str();
+    Cow::Owned(text.to_string())
   }
 }
 
@@ -888,6 +926,37 @@ impl traits::LogicalExpr for LogicalExpr {
 
   maybe_gat_accessor!(left, _left, Expr, Expr);
   maybe_gat_accessor!(right, _right, Expr, Expr);
+}
+
+/// Represents a number literal backed by a concrete syntax node.
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct NumLit {
+  syntax: SyntaxNode,
+}
+
+impl TryFrom<SyntaxNode> for NumLit {
+  type Error = ();
+
+  fn try_from(syntax: SyntaxNode) -> Result<Self, Self::Error> {
+    match syntax.kind() {
+      SyntaxKind::NodeNumLit => Ok(NumLit { syntax }),
+      _ => Err(()),
+    }
+  }
+}
+
+impl traits::NumLit for NumLit {
+  fn value(&self) -> f64 {
+    let token = trim_paren(self.syntax.clone()).first_token().unwrap();
+    let text = token.text().as_str();
+    parse_num_lit(text)
+  }
+}
+
+fn parse_num_lit(text: &str) -> f64 {
+  use core::str::FromStr;
+  // TODO: Add support for hex
+  return f64::from_str(text).expect(&format!("{:?}", text));
 }
 
 /// Represents a sequence expression backed by a concrete syntax node.
@@ -990,7 +1059,7 @@ impl traits::IdentPat for IdentPat {
   }
 }
 
-/// Represents a string literal backed by a lossless syntax node.
+/// Represents a string literal backed by a concrete syntax node.
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct StrLit {
   syntax: SyntaxNode,

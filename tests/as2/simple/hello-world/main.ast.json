@@ -5,7 +5,8 @@
       "expr": {
         "type": "CallExpr",
         "callee": {
-          "type": "IdentExpr"
+          "type": "IdentExpr",
+          "name": "trace"
         },
         "args": [
           {

@@ -16,10 +16,12 @@ pub trait Syntax: Sized {
   type Expr: Expr<Ast = Self>;
   type AssignExpr: AssignExpr<Ast = Self>;
   type BinExpr: BinExpr<Ast = Self>;
+  type BoolLit: BoolLit;
   type CallExpr: CallExpr<Ast = Self>;
   type ErrorExpr: ErrorExpr<Ast = Self>;
   type IdentExpr: IdentExpr;
   type LogicalExpr: LogicalExpr<Ast = Self>;
+  type NumLit: NumLit;
   type SeqExpr: SeqExpr<Ast = Self>;
   type StrLit: StrLit;
 
@@ -113,11 +115,13 @@ pub trait Expr {
 /// Represents the result of downcasting an expression.
 pub enum ExprCast<'a, S: Syntax> {
   Assign(MaybeOwned<'a, S::AssignExpr>),
+  BoolLit(MaybeOwned<'a, S::BoolLit>),
   Bin(MaybeOwned<'a, S::BinExpr>),
   Call(MaybeOwned<'a, S::CallExpr>),
   Ident(MaybeOwned<'a, S::IdentExpr>),
   Error(MaybeOwned<'a, S::ErrorExpr>),
   Logical(MaybeOwned<'a, S::LogicalExpr>),
+  NumLit(MaybeOwned<'a, S::NumLit>),
   Seq(MaybeOwned<'a, S::SeqExpr>),
   StrLit(MaybeOwned<'a, S::StrLit>),
 }
@@ -211,6 +215,10 @@ pub enum BinOp {
   UnsignedRightShift,
 }
 
+pub trait BoolLit {
+  fn value(&self) -> bool;
+}
+
 pub trait CallExpr {
   type Ast: Syntax;
   #[cfg(feature = "gat")]
@@ -259,6 +267,10 @@ pub enum LogicalOp {
   /// Logical operator `||`
   #[serde(rename = "||")]
   Or,
+}
+
+pub trait NumLit {
+  fn value(&self) -> f64;
 }
 
 /// Sequence expression

@@ -20,13 +20,16 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 3.0
             }
           ]
         }
@@ -40,12 +43,14 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "AssignExpr",
               "value": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 3.0
               }
             }
           ]
@@ -62,11 +67,13 @@
             {
               "type": "AssignExpr",
               "value": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               }
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 3.0
             }
           ]
         }
@@ -80,7 +87,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             }
           ]
         }
@@ -94,7 +102,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 4.0
             }
           ]
         }
@@ -108,16 +117,19 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "LogicalExpr",
               "op": "&&",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               },
               "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 3.0
               }
             }
           ]
@@ -135,14 +147,17 @@
               "type": "LogicalExpr",
               "op": "&&",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 1.0
               },
               "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               }
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 3.0
             }
           ]
         }
@@ -156,16 +171,19 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "LogicalExpr",
               "op": "||",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               },
               "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 3.0
               }
             }
           ]
@@ -183,14 +201,17 @@
               "type": "LogicalExpr",
               "op": "||",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 1.0
               },
               "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               }
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 3.0
             }
           ]
         }
@@ -204,61 +225,18 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "BinExpr",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               },
               "right": {
-                "type": "ErrorExpr"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "ExprStmt",
-      "expr": {
-        "type": "AssignExpr",
-        "value": {
-          "type": "SeqExpr",
-          "exprs": [
-            {
-              "type": "BinExpr",
-              "left": {
-                "type": "ErrorExpr"
-              },
-              "right": {
-                "type": "ErrorExpr"
-              }
-            },
-            {
-              "type": "ErrorExpr"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "ExprStmt",
-      "expr": {
-        "type": "AssignExpr",
-        "value": {
-          "type": "SeqExpr",
-          "exprs": [
-            {
-              "type": "ErrorExpr"
-            },
-            {
-              "type": "BinExpr",
-              "left": {
-                "type": "ErrorExpr"
-              },
-              "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 3.0
               }
             }
           ]
@@ -275,14 +253,17 @@
             {
               "type": "BinExpr",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 1.0
               },
               "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               }
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 3.0
             }
           ]
         }
@@ -296,61 +277,18 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "BinExpr",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               },
               "right": {
-                "type": "ErrorExpr"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "ExprStmt",
-      "expr": {
-        "type": "AssignExpr",
-        "value": {
-          "type": "SeqExpr",
-          "exprs": [
-            {
-              "type": "BinExpr",
-              "left": {
-                "type": "ErrorExpr"
-              },
-              "right": {
-                "type": "ErrorExpr"
-              }
-            },
-            {
-              "type": "ErrorExpr"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "ExprStmt",
-      "expr": {
-        "type": "AssignExpr",
-        "value": {
-          "type": "SeqExpr",
-          "exprs": [
-            {
-              "type": "ErrorExpr"
-            },
-            {
-              "type": "BinExpr",
-              "left": {
-                "type": "ErrorExpr"
-              },
-              "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 3.0
               }
             }
           ]
@@ -367,14 +305,17 @@
             {
               "type": "BinExpr",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 1.0
               },
               "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               }
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 3.0
             }
           ]
         }
@@ -388,61 +329,18 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "BinExpr",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               },
               "right": {
-                "type": "ErrorExpr"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "ExprStmt",
-      "expr": {
-        "type": "AssignExpr",
-        "value": {
-          "type": "SeqExpr",
-          "exprs": [
-            {
-              "type": "BinExpr",
-              "left": {
-                "type": "ErrorExpr"
-              },
-              "right": {
-                "type": "ErrorExpr"
-              }
-            },
-            {
-              "type": "ErrorExpr"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "ExprStmt",
-      "expr": {
-        "type": "AssignExpr",
-        "value": {
-          "type": "SeqExpr",
-          "exprs": [
-            {
-              "type": "ErrorExpr"
-            },
-            {
-              "type": "BinExpr",
-              "left": {
-                "type": "ErrorExpr"
-              },
-              "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 3.0
               }
             }
           ]
@@ -459,14 +357,17 @@
             {
               "type": "BinExpr",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 1.0
               },
               "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               }
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 3.0
             }
           ]
         }
@@ -480,61 +381,18 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "BinExpr",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               },
               "right": {
-                "type": "ErrorExpr"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "ExprStmt",
-      "expr": {
-        "type": "AssignExpr",
-        "value": {
-          "type": "SeqExpr",
-          "exprs": [
-            {
-              "type": "BinExpr",
-              "left": {
-                "type": "ErrorExpr"
-              },
-              "right": {
-                "type": "ErrorExpr"
-              }
-            },
-            {
-              "type": "ErrorExpr"
-            }
-          ]
-        }
-      }
-    },
-    {
-      "type": "ExprStmt",
-      "expr": {
-        "type": "AssignExpr",
-        "value": {
-          "type": "SeqExpr",
-          "exprs": [
-            {
-              "type": "ErrorExpr"
-            },
-            {
-              "type": "BinExpr",
-              "left": {
-                "type": "ErrorExpr"
-              },
-              "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 3.0
               }
             }
           ]
@@ -551,14 +409,17 @@
             {
               "type": "BinExpr",
               "left": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 1.0
               },
               "right": {
-                "type": "ErrorExpr"
+                "type": "NumLit",
+                "value": 2.0
               }
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 3.0
             }
           ]
         }
@@ -572,7 +433,216 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
+            },
+            {
+              "type": "BinExpr",
+              "left": {
+                "type": "NumLit",
+                "value": 2.0
+              },
+              "right": {
+                "type": "NumLit",
+                "value": 3.0
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "ExprStmt",
+      "expr": {
+        "type": "AssignExpr",
+        "value": {
+          "type": "SeqExpr",
+          "exprs": [
+            {
+              "type": "BinExpr",
+              "left": {
+                "type": "NumLit",
+                "value": 1.0
+              },
+              "right": {
+                "type": "NumLit",
+                "value": 2.0
+              }
+            },
+            {
+              "type": "NumLit",
+              "value": 3.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "ExprStmt",
+      "expr": {
+        "type": "AssignExpr",
+        "value": {
+          "type": "SeqExpr",
+          "exprs": [
+            {
+              "type": "NumLit",
+              "value": 1.0
+            },
+            {
+              "type": "BinExpr",
+              "left": {
+                "type": "NumLit",
+                "value": 2.0
+              },
+              "right": {
+                "type": "NumLit",
+                "value": 3.0
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "ExprStmt",
+      "expr": {
+        "type": "AssignExpr",
+        "value": {
+          "type": "SeqExpr",
+          "exprs": [
+            {
+              "type": "BinExpr",
+              "left": {
+                "type": "NumLit",
+                "value": 1.0
+              },
+              "right": {
+                "type": "NumLit",
+                "value": 2.0
+              }
+            },
+            {
+              "type": "NumLit",
+              "value": 3.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "ExprStmt",
+      "expr": {
+        "type": "AssignExpr",
+        "value": {
+          "type": "SeqExpr",
+          "exprs": [
+            {
+              "type": "NumLit",
+              "value": 1.0
+            },
+            {
+              "type": "BinExpr",
+              "left": {
+                "type": "NumLit",
+                "value": 2.0
+              },
+              "right": {
+                "type": "NumLit",
+                "value": 4.0
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "ExprStmt",
+      "expr": {
+        "type": "AssignExpr",
+        "value": {
+          "type": "SeqExpr",
+          "exprs": [
+            {
+              "type": "BinExpr",
+              "left": {
+                "type": "NumLit",
+                "value": 1.0
+              },
+              "right": {
+                "type": "NumLit",
+                "value": 2.0
+              }
+            },
+            {
+              "type": "NumLit",
+              "value": 4.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "ExprStmt",
+      "expr": {
+        "type": "AssignExpr",
+        "value": {
+          "type": "SeqExpr",
+          "exprs": [
+            {
+              "type": "NumLit",
+              "value": 1.0
+            },
+            {
+              "type": "BinExpr",
+              "left": {
+                "type": "NumLit",
+                "value": 2.0
+              },
+              "right": {
+                "type": "NumLit",
+                "value": 3.0
+              }
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "ExprStmt",
+      "expr": {
+        "type": "AssignExpr",
+        "value": {
+          "type": "SeqExpr",
+          "exprs": [
+            {
+              "type": "BinExpr",
+              "left": {
+                "type": "NumLit",
+                "value": 1.0
+              },
+              "right": {
+                "type": "NumLit",
+                "value": 2.0
+              }
+            },
+            {
+              "type": "NumLit",
+              "value": 3.0
+            }
+          ]
+        }
+      }
+    },
+    {
+      "type": "ExprStmt",
+      "expr": {
+        "type": "AssignExpr",
+        "value": {
+          "type": "SeqExpr",
+          "exprs": [
+            {
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "ErrorExpr"
@@ -592,7 +662,8 @@
               "type": "ErrorExpr"
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }
@@ -606,7 +677,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "ErrorExpr"
@@ -626,7 +698,8 @@
               "type": "ErrorExpr"
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }
@@ -640,7 +713,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "ErrorExpr"
@@ -660,7 +734,8 @@
               "type": "ErrorExpr"
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }
@@ -674,7 +749,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
               "type": "ErrorExpr"
@@ -694,7 +770,8 @@
               "type": "ErrorExpr"
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }
@@ -708,7 +785,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             }
           ]
         }
@@ -722,7 +800,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }
@@ -736,7 +815,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             }
           ]
         }
@@ -750,7 +830,8 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }
@@ -764,10 +845,12 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }
@@ -781,10 +864,12 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }
@@ -798,10 +883,12 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 1.0
             },
             {
-              "type": "IdentExpr"
+              "type": "IdentExpr",
+              "name": "y"
             }
           ]
         }
@@ -815,10 +902,12 @@
           "type": "SeqExpr",
           "exprs": [
             {
-              "type": "IdentExpr"
+              "type": "IdentExpr",
+              "name": "y"
             },
             {
-              "type": "ErrorExpr"
+              "type": "NumLit",
+              "value": 2.0
             }
           ]
         }

@@ -101,11 +101,13 @@ impl<Ast: Syntax> Serialize for SerializeExpr<'_, Ast> {
   fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
     match self.0.cast() {
       ExprCast::Assign(e) => SerializeAssignExpr::<Ast>(&*e).serialize(serializer),
+      ExprCast::BoolLit(e) => SerializeBoolLit(&*e).serialize(serializer),
       ExprCast::Bin(e) => SerializeBinExpr(&*e).serialize(serializer),
       ExprCast::Call(e) => SerializeCallExpr(&*e).serialize(serializer),
       ExprCast::Error(e) => SerializeErrorExpr::<Ast>(&*e).serialize(serializer),
       ExprCast::Ident(e) => SerializeIdentExpr(&*e).serialize(serializer),
       ExprCast::Logical(e) => SerializeLogicalExpr::<Ast>(&*e).serialize(serializer),
+      ExprCast::NumLit(e) => SerializeNumLit(&*e).serialize(serializer),
       ExprCast::Seq(e) => SerializeSeqExpr::<Ast>(&*e).serialize(serializer),
       ExprCast::StrLit(e) => SerializeStrLit(&*e).serialize(serializer),
     }
@@ -133,6 +135,18 @@ impl<T: BinExpr> Serialize for SerializeBinExpr<'_, T> {
     struct_serializer.serialize_field("type", "BinExpr")?;
     struct_serializer.serialize_field("left", &SerializeExpr::<T::Ast>(&*self.0.left()))?;
     struct_serializer.serialize_field("right", &SerializeExpr::<T::Ast>(&*self.0.right()))?;
+    struct_serializer.end()
+  }
+}
+
+pub struct SerializeBoolLit<'a, T: BoolLit>(pub &'a T);
+
+impl<T: BoolLit> Serialize for SerializeBoolLit<'_, T> {
+  fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
+    use serde::ser::SerializeStruct;
+    let mut struct_serializer = serializer.serialize_struct("BoolLit", 2)?;
+    struct_serializer.serialize_field("type", "BoolLit")?;
+    struct_serializer.serialize_field("value", &self.0.value())?;
     struct_serializer.end()
   }
 }
@@ -184,8 +198,9 @@ pub struct SerializeIdentExpr<'a, T: IdentExpr>(pub &'a T);
 impl<T: IdentExpr> Serialize for SerializeIdentExpr<'_, T> {
   fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
     use serde::ser::SerializeStruct;
-    let mut struct_serializer = serializer.serialize_struct("IdentExpr", 1)?;
+    let mut struct_serializer = serializer.serialize_struct("IdentExpr", 2)?;
     struct_serializer.serialize_field("type", "IdentExpr")?;
+    struct_serializer.serialize_field("name", &self.0.name())?;
     struct_serializer.end()
   }
 }
@@ -200,6 +215,18 @@ impl<Ast: Syntax> Serialize for SerializeLogicalExpr<'_, Ast> {
     struct_serializer.serialize_field("op", &self.0.op())?;
     struct_serializer.serialize_field("left", &SerializeExpr::<Ast>(&self.0.left()))?;
     struct_serializer.serialize_field("right", &SerializeExpr::<Ast>(&self.0.right()))?;
+    struct_serializer.end()
+  }
+}
+
+pub struct SerializeNumLit<'a, T: NumLit>(pub &'a T);
+
+impl<T: NumLit> Serialize for SerializeNumLit<'_, T> {
+  fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
+    use serde::ser::SerializeStruct;
+    let mut struct_serializer = serializer.serialize_struct("NumLit", 2)?;
+    struct_serializer.serialize_field("type", "NumLit")?;
+    struct_serializer.serialize_field("value", &self.0.value())?;
     struct_serializer.end()
   }
 }
