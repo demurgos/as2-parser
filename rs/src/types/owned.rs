@@ -6,7 +6,7 @@ macro_rules! impl_serialize {
   ($struct_name:ident, $adapter_name:ident) => {
     impl Serialize for $struct_name {
       fn serialize<S: Serializer>(&self, serializer: S) -> Result<<S as Serializer>::Ok, <S as Serializer>::Error> {
-        crate::types::ast::ser::$adapter_name::<OwnedSyntax>(self).serialize(serializer)
+        crate::types::ast::ser::$adapter_name(self).serialize(serializer)
       }
     }
   };

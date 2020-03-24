@@ -507,7 +507,7 @@ macro_rules! impl_serialize {
   ($struct_name:ident, $adapter_name:ident) => {
     impl serde::Serialize for $struct_name {
       fn serialize<S: serde::Serializer>(&self, serializer: S) -> Result<S::Ok, S::Error> {
-        crate::types::ast::ser::$adapter_name::<ConcreteSyntax>(self).serialize(serializer)
+        crate::types::ast::ser::$adapter_name(self).serialize(serializer)
       }
     }
   };
