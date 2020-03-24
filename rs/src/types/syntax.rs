@@ -268,7 +268,14 @@ pub enum SyntaxKind {
   /// Expression statement
   NodeExprStmt,
 
-  /// Variable declaration
+  /// Variable statement
+  ///
+  /// Declares one or more variables.
+  NodeVarStmt,
+
+  /// Variable declaration inside a var statement
+  ///
+  /// Declares a single variable.
   NodeVarDecl,
 
   /// Root node
@@ -351,7 +358,7 @@ impl SyntaxKind {
   pub fn is_stmt(self) -> bool {
     use SyntaxKind::*;
     match self {
-      NodeExprStmt | NodeVarDecl => true,
+      NodeExprStmt | NodeVarStmt => true,
       _ => false,
     }
   }
@@ -468,6 +475,8 @@ impl traits::Syntax for ConcreteSyntax {
   type ExprStmt = ExprStmt;
   type ErrorStmt = ErrorStmt;
   type TraceStmt = TraceStmt;
+  type VarStmt = VarStmt;
+
   type VarDecl = VarDecl;
 
   type Expr = Expr;
@@ -484,12 +493,14 @@ impl traits::Syntax for ConcreteSyntax {
   type UpdateExpr = UpdateExpr;
   type UnaryExpr = UnaryExpr;
 
-  #[cfg(feature = "gat")]
-  type ExprRef<'r> = Expr;
-
   type Pat = Pat;
   type MemberPat = MemberPat;
   type IdentPat = IdentPat;
+
+  #[cfg(feature = "gat")]
+  type ExprRef<'r> = Expr;
+  #[cfg(feature = "gat")]
+  type IdentPatRef<'r> = IdentPat;
 }
 
 macro_rules! impl_serialize {
@@ -585,7 +596,7 @@ impl traits::Stmt for Stmt {
       SyntaxKind::NodeExprStmt => traits::StmtCast::Expr(traits::MaybeOwned::Owned(ExprStmt {
         syntax: self.syntax.clone(),
       })),
-      SyntaxKind::NodeVarDecl => traits::StmtCast::VarDecl(traits::MaybeOwned::Owned(VarDecl {
+      SyntaxKind::NodeVarStmt => traits::StmtCast::VarStmt(traits::MaybeOwned::Owned(VarStmt {
         syntax: self.syntax.clone(),
       })),
       _ => traits::StmtCast::Error(traits::MaybeOwned::Owned(ErrorStmt {
@@ -659,12 +670,77 @@ impl traits::TraceStmt for TraceStmt {
 
 /// Represents a break statement backed by a concrete syntax node.
 #[derive(Debug, Eq, PartialEq, Clone, Hash)]
+pub struct VarStmt {
+  syntax: SyntaxNode,
+}
+
+impl traits::VarStmt for VarStmt {
+  type Ast = ConcreteSyntax;
+  #[cfg(feature = "gat")]
+  type VarDeclIter<'a> = VarDeclIter;
+
+  #[cfg(feature = "gat")]
+  fn decls(&self) -> Self::VarDeclIter<'_> {
+    VarDeclIter {
+      inner: self.syntax.clone().children(),
+    }
+  }
+  #[cfg(not(feature = "gat"))]
+  fn decls<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, VarDecl>> + 'a> {
+    Box::new(VarDeclIter {
+      inner: self.syntax.clone().children(),
+    })
+  }
+}
+
+pub struct VarDeclIter {
+  inner: SyntaxNodeChildren<As2Lang>,
+}
+
+impl Iterator for VarDeclIter {
+  type Item = traits::MaybeOwned<'static, VarDecl>;
+
+  fn next(&mut self) -> Option<Self::Item> {
+    while let Some(node) = self.inner.next() {
+      match VarDecl::try_from(node) {
+        Ok(e) => return Some(traits::MaybeOwned::Owned(e)),
+        Err(()) => {}
+      }
+    }
+    None
+  }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Hash)]
 pub struct VarDecl {
   syntax: SyntaxNode,
 }
 
+impl VarDecl {
+  fn _pat(&self) -> IdentPat {
+    unimplemented!()
+  }
+}
+
+impl TryFrom<SyntaxNode> for VarDecl {
+  type Error = ();
+
+  fn try_from(syntax: SyntaxNode) -> Result<Self, Self::Error> {
+    match syntax.kind() {
+      SyntaxKind::NodeVarDecl => Ok(Self { syntax }),
+      _ => Err(()),
+    }
+  }
+}
+
 impl traits::VarDecl for VarDecl {
   type Ast = ConcreteSyntax;
+
+  maybe_gat_accessor!(pat, _pat, IdentPat, IdentPat);
+
+  // fn init(&self) -> Option<Expr> {
+  //   unimplemented!()
+  // }
 }
 
 /// Represents an expression backed by a concrete syntax node.
@@ -1154,6 +1230,14 @@ pub struct IdentPat {
   syntax: SyntaxNode,
 }
 
+impl Deref for IdentPat {
+  type Target = IdentPat;
+
+  fn deref(&self) -> &IdentPat {
+    &self
+  }
+}
+
 impl TryFrom<SyntaxNode> for IdentPat {
   type Error = ();
 
@@ -1395,6 +1479,6 @@ mod tests {
 
   #[test]
   fn test_syntax_kind_variant_count() {
-    assert_eq!(SyntaxKind::VARIANT_COUNT, 77);
+    assert_eq!(SyntaxKind::VARIANT_COUNT, 78);
   }
 }

@@ -195,7 +195,7 @@ impl<'text> Parser<'text> {
       Some(token) => token,
     };
     match first.kind {
-      SyntaxKind::TokenVar => self.var_decl(),
+      SyntaxKind::TokenVar => self.var_stmt(),
       kind if EXPR_START.contains(Some(kind)) => {
         self.expr_stmt();
         // Labelled statement or expression
@@ -217,17 +217,15 @@ impl<'text> Parser<'text> {
     self.builder.finish_node();
   }
 
-  fn var_decl(&mut self) {
-    self.builder.start_node(SyntaxKind::NodeVarDecl.into());
+  fn var_stmt(&mut self) {
+    self.builder.start_node(SyntaxKind::NodeVarStmt.into());
     debug_assert!(matches!(
-      self.lexer.peek(),
-      Some(LexerToken {
-        kind: SyntaxKind::TokenVar,
-        ..
-      })
+      self.lexer.peek_kind(),
+      Some(SyntaxKind::TokenVar)
     ));
     self.bump();
     self.eat_trivia();
+    self.builder.start_node(SyntaxKind::NodeVarDecl.into());
     self.ident();
     self.eat_trivia();
     debug_assert!(matches!(
@@ -240,6 +238,13 @@ impl<'text> Parser<'text> {
     self.bump();
     self.eat_trivia();
     self.expr(token_set!(None, SyntaxKind::TokenSemicolon));
+
+    self.builder.finish_node();
+
+    debug_assert!(matches!(
+      self.lexer.peek_kind_over_trivia(),
+      Some(SyntaxKind::TokenSemicolon)
+    ));
     self.eat_trivia();
     self.bump();
 

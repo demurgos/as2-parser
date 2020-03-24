@@ -1,16 +1,37 @@
 {
+  "type": "Script",
   "body": [
     {
-      "type": "VarDecl"
+      "type": "VarStmt",
+      "decls": [
+        {
+          "type": "VarDecl"
+        }
+      ]
     },
     {
-      "type": "VarDecl"
+      "type": "VarStmt",
+      "decls": [
+        {
+          "type": "VarDecl"
+        }
+      ]
     },
     {
-      "type": "VarDecl"
+      "type": "VarStmt",
+      "decls": [
+        {
+          "type": "VarDecl"
+        }
+      ]
     },
     {
-      "type": "VarDecl"
+      "type": "VarStmt",
+      "decls": [
+        {
+          "type": "VarDecl"
+        }
+      ]
     },
     {
       "type": "ExprStmt",

@@ -11,6 +11,8 @@ pub trait Syntax: Sized {
   type ErrorStmt: ErrorStmt;
   type ExprStmt: ExprStmt<Ast = Self>;
   type TraceStmt: TraceStmt<Ast = Self>;
+  type VarStmt: VarStmt<Ast = Self>;
+
   type VarDecl: VarDecl<Ast = Self>;
 
   type Expr: Expr<Ast = Self>;
@@ -27,12 +29,14 @@ pub trait Syntax: Sized {
   type UpdateExpr: UpdateExpr<Ast = Self>;
   type UnaryExpr: UnaryExpr<Ast = Self>;
 
-  #[cfg(feature = "gat")]
-  type ExprRef<'a>: core::ops::Deref<Target = Self::Expr>;
-
   type Pat: Pat<Ast = Self>;
   type MemberPat: MemberPat<Ast = Self>;
   type IdentPat: IdentPat;
+
+  #[cfg(feature = "gat")]
+  type ExprRef<'a>: core::ops::Deref<Target = Self::Expr>;
+  #[cfg(feature = "gat")]
+  type IdentPatRef<'a>: core::ops::Deref<Target = Self::IdentPat>;
 }
 
 /// A `Cow` variant that does not require `ToOwned`.
@@ -91,7 +95,7 @@ pub enum StmtCast<'a, S: Syntax> {
   Error(MaybeOwned<'a, S::ErrorStmt>),
   Trace(MaybeOwned<'a, S::TraceStmt>),
   Expr(MaybeOwned<'a, S::ExprStmt>),
-  VarDecl(MaybeOwned<'a, S::VarDecl>),
+  VarStmt(MaybeOwned<'a, S::VarStmt>),
 }
 
 pub trait BreakStmt {}
@@ -117,19 +121,31 @@ pub trait TraceStmt {
 }
 
 /// Variable declaration statement
-pub trait VarDecl {
+pub trait VarStmt {
   type Ast: Syntax;
+  #[cfg(feature = "gat")]
+  type VarDeclIter<'a>: Iterator<Item = MaybeOwned<'a, <Self::Ast as Syntax>::VarDecl>>;
+
+  #[cfg(feature = "gat")]
+  fn decls(&self) -> Self::VarDeclIter<'_>;
+  #[cfg(not(feature = "gat"))]
+  fn decls<'a>(&'a self) -> Box<dyn Iterator<Item = MaybeOwned<'a, <Self::Ast as Syntax>::VarDecl>> + 'a>;
 }
 
-// /// A single variable declarator inside a variable declaration statement
-// pub trait VarDeclarator {
-//   type Ast: Syntax;
-//
-//   #[cfg(feature = "gat")]
-//   fn init(&self) -> Option<<Self::Ast as Syntax>::ExprRef<'_>>;
-//   #[cfg(not(feature = "gat"))]
-//   fn init<'a>(&'a self) -> Option<Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>>;
-// }
+/// A single variable declarator inside a variable declaration statement
+pub trait VarDecl {
+  type Ast: Syntax;
+
+  #[cfg(feature = "gat")]
+  fn pat(&self) -> <Self::Ast as Syntax>::IdentPatRef<'_>;
+  #[cfg(not(feature = "gat"))]
+  fn pat<'a>(&'a self) -> Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::IdentPat> + 'a>;
+
+  // #[cfg(feature = "gat")]
+  // fn init(&self) -> Option<<Self::Ast as Syntax>::ExprRef<'_>>;
+  // #[cfg(not(feature = "gat"))]
+  // fn init<'a>(&'a self) -> Option<Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>>;
+}
 
 /// Trait representing any ActionScript expression
 pub trait Expr {

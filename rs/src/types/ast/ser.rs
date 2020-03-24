@@ -8,7 +8,8 @@ pub struct SerializeScript<'a, Ast: Syntax>(pub &'a Ast::Script);
 impl<Ast: Syntax> Serialize for SerializeScript<'_, Ast> {
   fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
     use serde::ser::SerializeStruct;
-    let mut struct_serializer = serializer.serialize_struct("Script", 1)?;
+    let mut struct_serializer = serializer.serialize_struct("Script", 2)?;
+    struct_serializer.serialize_field("type", "Script")?;
     struct_serializer.serialize_field("body", &SerializeScriptStmts::<Ast>(self.0))?;
     struct_serializer.end()
   }
@@ -44,7 +45,7 @@ impl<Ast: Syntax> Serialize for SerializeStmt<'_, Ast> {
       StmtCast::Break(s) => SerializeBreakStmt::<Ast>(&*s).serialize(serializer),
       StmtCast::Error(s) => SerializeErrorStmt::<Ast>(&*s).serialize(serializer),
       StmtCast::Expr(s) => SerializeExprStmt::<Ast>(&*s).serialize(serializer),
-      StmtCast::VarDecl(s) => SerializeVarDecl::<Ast>(&*s).serialize(serializer),
+      StmtCast::VarStmt(s) => SerializeVarStmt::<Ast>(&*s).serialize(serializer),
       _ => unimplemented!(),
     }
   }
@@ -81,6 +82,40 @@ impl<Ast: Syntax> Serialize for SerializeExprStmt<'_, Ast> {
     struct_serializer.serialize_field("type", "ExprStmt")?;
     struct_serializer.serialize_field("expr", &SerializeExpr::<Ast>(&*self.0.expr()))?;
     struct_serializer.end()
+  }
+}
+
+pub struct SerializeVarStmt<'a, Ast: Syntax>(pub &'a Ast::VarStmt);
+
+impl<Ast: Syntax> Serialize for SerializeVarStmt<'_, Ast> {
+  fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
+    use serde::ser::SerializeStruct;
+    let mut struct_serializer = serializer.serialize_struct("VarStmt", 2)?;
+    struct_serializer.serialize_field("type", "VarStmt")?;
+    struct_serializer.serialize_field("decls", &SerializeVarStmtDecls::<Ast>(self.0))?;
+    struct_serializer.end()
+  }
+}
+
+struct SerializeVarStmtDecls<'a, Ast: Syntax>(pub &'a Ast::VarStmt);
+
+impl<'a, Ast: Syntax> Serialize for SerializeVarStmtDecls<'a, Ast> {
+  fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
+    use serde::ser::SerializeSeq;
+    let decls = self.0.decls();
+    let len = match decls.size_hint() {
+      (min_len, Some(max_len)) if min_len == max_len => Some(min_len),
+      _ => None,
+    };
+    let mut seq_serializer = serializer.serialize_seq(len)?;
+    for decl in decls {
+      let decl: &Ast::VarDecl = match decl {
+        MaybeOwned::Owned(ref s) => s,
+        MaybeOwned::Borrowed(s) => &*s,
+      };
+      seq_serializer.serialize_element(&SerializeVarDecl::<Ast>(decl))?;
+    }
+    seq_serializer.end()
   }
 }
 

@@ -1,71 +1,79 @@
 NodeScript@[0; 787) {
-  NodeVarDecl@[0; 10) {
+  NodeVarStmt@[0; 10) {
     TokenVar@[0; 3) "var"
     TokenUnilineWhitespace@[3; 4) " "
-    NodeIdent@[4; 5) {
-      TokenIdent@[4; 5) "x"
-    }
-    TokenUnilineWhitespace@[5; 6) " "
-    TokenEq@[6; 7) "="
-    TokenUnilineWhitespace@[7; 8) " "
-    NodeNumLit@[8; 9) {
-      TokenNumLit@[8; 9) "1"
+    NodeVarDecl@[4; 9) {
+      NodeIdent@[4; 5) {
+        TokenIdent@[4; 5) "x"
+      }
+      TokenUnilineWhitespace@[5; 6) " "
+      TokenEq@[6; 7) "="
+      TokenUnilineWhitespace@[7; 8) " "
+      NodeNumLit@[8; 9) {
+        TokenNumLit@[8; 9) "1"
+      }
     }
     TokenSemicolon@[9; 10) ";"
   }
   TokenMultilineWhitespace@[10; 11) "\n"
-  NodeVarDecl@[11; 21) {
+  NodeVarStmt@[11; 21) {
     TokenVar@[11; 14) "var"
     TokenUnilineWhitespace@[14; 15) " "
-    NodeIdent@[15; 16) {
-      TokenIdent@[15; 16) "y"
-    }
-    TokenUnilineWhitespace@[16; 17) " "
-    TokenEq@[17; 18) "="
-    TokenUnilineWhitespace@[18; 19) " "
-    NodeNumLit@[19; 20) {
-      TokenNumLit@[19; 20) "1"
+    NodeVarDecl@[15; 20) {
+      NodeIdent@[15; 16) {
+        TokenIdent@[15; 16) "y"
+      }
+      TokenUnilineWhitespace@[16; 17) " "
+      TokenEq@[17; 18) "="
+      TokenUnilineWhitespace@[18; 19) " "
+      NodeNumLit@[19; 20) {
+        TokenNumLit@[19; 20) "1"
+      }
     }
     TokenSemicolon@[20; 21) ";"
   }
   TokenMultilineWhitespace@[21; 22) "\n"
-  NodeVarDecl@[22; 35) {
+  NodeVarStmt@[22; 35) {
     TokenVar@[22; 25) "var"
     TokenUnilineWhitespace@[25; 26) " "
-    NodeIdent@[26; 27) {
-      TokenIdent@[26; 27) "z"
-    }
-    TokenUnilineWhitespace@[27; 28) " "
-    TokenEq@[28; 29) "="
-    TokenUnilineWhitespace@[29; 30) " "
-    NodeBoolLit@[30; 34) {
-      TokenTrue@[30; 34) "true"
+    NodeVarDecl@[26; 34) {
+      NodeIdent@[26; 27) {
+        TokenIdent@[26; 27) "z"
+      }
+      TokenUnilineWhitespace@[27; 28) " "
+      TokenEq@[28; 29) "="
+      TokenUnilineWhitespace@[29; 30) " "
+      NodeBoolLit@[30; 34) {
+        TokenTrue@[30; 34) "true"
+      }
     }
     TokenSemicolon@[34; 35) ";"
   }
   TokenMultilineWhitespace@[35; 36) "\n"
-  NodeVarDecl@[36; 57) {
+  NodeVarStmt@[36; 57) {
     TokenVar@[36; 39) "var"
     TokenUnilineWhitespace@[39; 40) " "
-    NodeIdent@[40; 41) {
-      TokenIdent@[40; 41) "o"
-    }
-    TokenUnilineWhitespace@[41; 42) " "
-    TokenEq@[42; 43) "="
-    TokenUnilineWhitespace@[43; 44) " "
-    NodeObjectLit@[44; 56) {
-      TokenOpenBrace@[44; 45) "{"
-      NodeObjectLitProp@[45; 55) {
-        NodeIdent@[45; 48) {
-          TokenIdent@[45; 48) "foo"
-        }
-        TokenColon@[48; 49) ":"
-        TokenUnilineWhitespace@[49; 50) " "
-        NodeStrLit@[50; 55) {
-          TokenStrLit@[50; 55) "\"bar\""
-        }
+    NodeVarDecl@[40; 56) {
+      NodeIdent@[40; 41) {
+        TokenIdent@[40; 41) "o"
       }
-      TokenCloseBrace@[55; 56) "}"
+      TokenUnilineWhitespace@[41; 42) " "
+      TokenEq@[42; 43) "="
+      TokenUnilineWhitespace@[43; 44) " "
+      NodeObjectLit@[44; 56) {
+        TokenOpenBrace@[44; 45) "{"
+        NodeObjectLitProp@[45; 55) {
+          NodeIdent@[45; 48) {
+            TokenIdent@[45; 48) "foo"
+          }
+          TokenColon@[48; 49) ":"
+          TokenUnilineWhitespace@[49; 50) " "
+          NodeStrLit@[50; 55) {
+            TokenStrLit@[50; 55) "\"bar\""
+          }
+        }
+        TokenCloseBrace@[55; 56) "}"
+      }
     }
     TokenSemicolon@[56; 57) ";"
   }

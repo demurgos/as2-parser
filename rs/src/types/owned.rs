@@ -23,6 +23,8 @@ impl traits::Syntax for OwnedSyntax {
   type ExprStmt = ExprStmt;
   type ErrorStmt = ErrorStmt;
   type TraceStmt = TraceStmt;
+  type VarStmt = VarStmt;
+
   type VarDecl = VarDecl;
 
   type Expr = Expr;
@@ -39,12 +41,14 @@ impl traits::Syntax for OwnedSyntax {
   type UpdateExpr = UpdateExpr;
   type UnaryExpr = UnaryExpr;
 
-  #[cfg(feature = "gat")]
-  type ExprRef<'r> = &'r Expr;
-
   type Pat = Pat;
   type MemberPat = MemberPat;
   type IdentPat = IdentPat;
+
+  #[cfg(feature = "gat")]
+  type ExprRef<'r> = &'r Expr;
+  #[cfg(feature = "gat")]
+  type IdentPatRef<'r> = &'r IdentPat;
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
@@ -148,12 +152,45 @@ impl traits::TraceStmt for TraceStmt {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
+pub struct VarStmt {
+  pub loc: (),
+  pub decls: Vec<VarDecl>,
+}
+
+impl traits::VarStmt for VarStmt {
+  type Ast = OwnedSyntax;
+  #[allow(clippy::type_complexity)]
+  #[cfg(feature = "gat")]
+  type VarDeclIter<'a> =
+  core::iter::Map<core::slice::Iter<'a, VarDecl>, for<'r> fn(&'r VarDecl) -> traits::MaybeOwned<'r, VarDecl>>;
+
+  #[cfg(feature = "gat")]
+  fn decls(&self) -> Self::VarDeclIter<'_> {
+    self.decls.iter().map(|e| traits::MaybeOwned::Borrowed(e))
+  }
+  #[cfg(not(feature = "gat"))]
+  fn decls<'a>(&'a self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'a, VarDecl>> + 'a> {
+    Box::new(self.decls.iter().map(|e| traits::MaybeOwned::Borrowed(e)))
+  }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
 pub struct VarDecl {
   pub loc: (),
+  pub pat: IdentPat,
+  pub init: Option<Box<Expr>>,
+}
+
+impl VarDecl {
+  fn _pat(&self) -> &IdentPat {
+    &self.pat
+  }
 }
 
 impl traits::VarDecl for VarDecl {
   type Ast = OwnedSyntax;
+
+  maybe_gat_accessor!(pat, _pat, ref IdentPat, ref IdentPat);
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
@@ -526,7 +563,7 @@ mod script_tests {
     };
 
     let actual_json = serde_json::to_string(&script).unwrap();
-    let expected_json = String::from("{\"body\":[{\"type\":\"BreakStmt\"},{\"type\":\"BreakStmt\"}]}");
+    let expected_json = String::from("{\"type\":\"Script\",\"body\":[{\"type\":\"BreakStmt\"},{\"type\":\"BreakStmt\"}]}");
 
     assert_eq!(actual_json, expected_json);
   }

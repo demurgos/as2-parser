@@ -15,6 +15,8 @@ impl<'a> traits::Syntax for BorrowedSyntax<'a> {
   type ErrorStmt = ErrorStmt<'a>;
   type ExprStmt = ExprStmt<'a>;
   type TraceStmt = TraceStmt<'a>;
+  type VarStmt = VarStmt<'a>;
+
   type VarDecl = VarDecl<'a>;
 
   type Expr = Expr<'a>;
@@ -31,12 +33,14 @@ impl<'a> traits::Syntax for BorrowedSyntax<'a> {
   type UpdateExpr = UpdateExpr<'a>;
   type UnaryExpr = UnaryExpr<'a>;
 
-  #[cfg(feature = "gat")]
-  type ExprRef<'r> = &'r Expr<'r>;
-
   type Pat = Pat<'a>;
   type MemberPat = MemberPat<'a>;
   type IdentPat = IdentPat<'a>;
+
+  #[cfg(feature = "gat")]
+  type ExprRef<'r> = &'r Expr<'r>;
+  #[cfg(feature = "gat")]
+  type IdentPatRef<'r> = &'r IdentPat<'r>;
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash)]
@@ -134,13 +138,45 @@ impl<'a> traits::TraceStmt for TraceStmt<'a> {
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash)]
+pub struct VarStmt<'a> {
+  pub loc: (),
+  pub decls: &'a [VarDecl<'a>],
+}
+
+impl<'a> traits::VarStmt for VarStmt<'a> {
+  type Ast = BorrowedSyntax<'a>;
+  #[allow(clippy::type_complexity)]
+  #[cfg(feature = "gat")]
+  type VarDeclIter<'i> =
+  core::iter::Map<core::slice::Iter<'i, VarDecl<'i>>, for<'r> fn(&'r VarDecl<'i>) -> traits::MaybeOwned<'r, VarDecl<'i>>>;
+
+  #[cfg(feature = "gat")]
+  fn decls(&self) -> Self::VarDeclIter<'_> {
+    self.decls.iter().map(|e| traits::MaybeOwned::Borrowed(e))
+  }
+  #[cfg(not(feature = "gat"))]
+  fn decls<'i>(&'i self) -> Box<dyn Iterator<Item = traits::MaybeOwned<'i, VarDecl<'a>>> + 'i> {
+    Box::new(self.decls.iter().map(|e| traits::MaybeOwned::Borrowed(e)))
+  }
+}
+
+#[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash)]
 pub struct VarDecl<'a> {
   pub loc: (),
-  pub phantom: PhantomData<&'a ()>,
+  pub pat: &'a IdentPat<'a>,
+  pub init: Option<&'a Expr<'a>>,
+}
+
+impl<'a> VarDecl<'a> {
+  fn _pat(&self) -> &IdentPat<'a> {
+    self.pat
+  }
 }
 
 impl<'a> traits::VarDecl for VarDecl<'a> {
   type Ast = BorrowedSyntax<'a>;
+
+  maybe_gat_accessor!(pat, _pat, ref IdentPat<'_>, ref IdentPat<'a>);
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash)]
