@@ -141,10 +141,10 @@ pub trait VarDecl {
   #[cfg(not(feature = "gat"))]
   fn pat<'a>(&'a self) -> Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::IdentPat> + 'a>;
 
-  // #[cfg(feature = "gat")]
-  // fn init(&self) -> Option<<Self::Ast as Syntax>::ExprRef<'_>>;
-  // #[cfg(not(feature = "gat"))]
-  // fn init<'a>(&'a self) -> Option<Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>>;
+  #[cfg(feature = "gat")]
+  fn init(&self) -> Option<<Self::Ast as Syntax>::ExprRef<'_>>;
+  #[cfg(not(feature = "gat"))]
+  fn init<'a>(&'a self) -> Option<Box<dyn core::ops::Deref<Target = <Self::Ast as Syntax>::Expr> + 'a>>;
 }
 
 /// Trait representing any ActionScript expression
@@ -424,5 +424,5 @@ pub trait MemberPat {
 }
 
 pub trait IdentPat {
-  fn name(&self) -> &str;
+  fn name(&self) -> Cow<str>;
 }

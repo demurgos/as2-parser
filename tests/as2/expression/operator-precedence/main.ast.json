@@ -5,7 +5,15 @@
       "type": "VarStmt",
       "decls": [
         {
-          "type": "VarDecl"
+          "type": "VarDecl",
+          "pat": {
+            "type": "IdentPat",
+            "name": "x"
+          },
+          "init": {
+            "type": "NumLit",
+            "value": 1.0
+          }
         }
       ]
     },
@@ -13,7 +21,15 @@
       "type": "VarStmt",
       "decls": [
         {
-          "type": "VarDecl"
+          "type": "VarDecl",
+          "pat": {
+            "type": "IdentPat",
+            "name": "y"
+          },
+          "init": {
+            "type": "NumLit",
+            "value": 1.0
+          }
         }
       ]
     },
@@ -21,7 +37,15 @@
       "type": "VarStmt",
       "decls": [
         {
-          "type": "VarDecl"
+          "type": "VarDecl",
+          "pat": {
+            "type": "IdentPat",
+            "name": "z"
+          },
+          "init": {
+            "type": "BoolLit",
+            "value": true
+          }
         }
       ]
     },
@@ -29,7 +53,14 @@
       "type": "VarStmt",
       "decls": [
         {
-          "type": "VarDecl"
+          "type": "VarDecl",
+          "pat": {
+            "type": "IdentPat",
+            "name": "o"
+          },
+          "init": {
+            "type": "ErrorExpr"
+          }
         }
       ]
     },

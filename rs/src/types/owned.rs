@@ -185,12 +185,31 @@ impl VarDecl {
   fn _pat(&self) -> &IdentPat {
     &self.pat
   }
+  fn _init(&self) -> Option<&Expr> {
+    self.init.as_deref()
+  }
 }
 
 impl traits::VarDecl for VarDecl {
   type Ast = OwnedSyntax;
 
   maybe_gat_accessor!(pat, _pat, ref IdentPat, ref IdentPat);
+
+  #[cfg(feature = "gat")]
+  fn init(&self) -> Option<&Expr> {
+  self._init()
+  }
+
+  #[cfg(not(feature = "gat"))]
+  fn init<'r>(&'r self) -> Option<Box<dyn core::ops::Deref<Target = Expr> + 'r>> {
+    match self._init() {
+      None => None,
+      Some(init) => {
+        let b: Box<&Expr> = Box::new(init);
+        Some(b)
+      }
+    }
+  }
 }
 
 #[derive(Debug, Eq, PartialEq, Clone, Ord, PartialOrd, Hash, Deserialize)]
@@ -506,8 +525,8 @@ pub struct IdentPat {
 }
 
 impl traits::IdentPat for IdentPat {
-  fn name(&self) -> &str {
-    &self.name
+  fn name(&self) -> Cow<str> {
+    Cow::Borrowed(&self.name)
   }
 }
 

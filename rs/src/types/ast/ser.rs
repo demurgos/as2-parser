@@ -119,6 +119,15 @@ impl<T: VarDecl> Serialize for SerializeVarDecl<'_, T> {
     use serde::ser::SerializeStruct;
     let mut struct_serializer = serializer.serialize_struct("VarDecl", 1)?;
     struct_serializer.serialize_field("type", "VarDecl")?;
+    let pat: &<T::Ast as Syntax>::IdentPat = &*self.0.pat();
+    struct_serializer.serialize_field("pat", &SerializeIdentPat(pat))?;
+    match self.0.init() {
+      None => struct_serializer.serialize_field("init", &())?,
+      Some(init) => {
+        let init: &<T::Ast as Syntax>::Expr = &*init;
+        struct_serializer.serialize_field("init", &SerializeExpr(init))?;
+      }
+    }
     struct_serializer.end()
   }
 }
@@ -334,6 +343,18 @@ impl<T: UnaryExpr> Serialize for SerializeUnaryExpr<'_, T> {
     struct_serializer.serialize_field("op", &self.0.op())?;
     let arg: &<T::Ast as Syntax>::Expr = &*self.0.arg();
     struct_serializer.serialize_field("arg", &SerializeExpr(arg))?;
+    struct_serializer.end()
+  }
+}
+
+pub struct SerializeIdentPat<'a, T: IdentPat>(pub &'a T);
+
+impl<T: IdentPat> Serialize for SerializeIdentPat<'_, T> {
+  fn serialize<Ser: Serializer>(&self, serializer: Ser) -> Result<Ser::Ok, Ser::Error> {
+    use serde::ser::SerializeStruct;
+    let mut struct_serializer = serializer.serialize_struct("IdentPat", 2)?;
+    struct_serializer.serialize_field("type", "IdentPat")?;
+    struct_serializer.serialize_field("name", &self.0.name())?;
     struct_serializer.end()
   }
 }

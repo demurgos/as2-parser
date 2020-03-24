@@ -208,6 +208,9 @@ pub enum SyntaxKind {
   /// Number literal expression
   NodeNumLit,
 
+  /// Array literal expression
+  NodeArrayLit,
+
   /// Object literal expression
   NodeObjectLit,
 
@@ -366,7 +369,7 @@ impl SyntaxKind {
   pub fn is_expr(self) -> bool {
     use SyntaxKind::*;
     match self {
-      NodeAssignExpr | NodeIdent | NodeInfixExpr | NodeBoolLit | NodeCallExpr | NodeNumLit | NodeParenExpr
+      NodeArrayLit | NodeAssignExpr | NodeIdent | NodeInfixExpr | NodeBoolLit | NodeCallExpr | NodeNumLit | NodeObjectLit | NodeParenExpr
       | NodePostfixExpr | NodePrefixExpr | NodeSeqExpr | NodeStrLit => true,
       _ => false,
     }
@@ -718,7 +721,26 @@ pub struct VarDecl {
 
 impl VarDecl {
   fn _pat(&self) -> IdentPat {
-    unimplemented!()
+    let pat_node = self.syntax.first_child().unwrap();
+    match IdentPat::try_from(pat_node) {
+      Ok(e) => e,
+      Err(()) => unimplemented!(),
+    }
+  }
+
+  fn _init(&self) -> Option<Expr> {
+    let mut nodes = self.syntax.children();
+    nodes.next().unwrap();
+    match nodes.next() {
+      None => None,
+      Some(init_node) => {
+        let k = init_node.kind();
+        match Expr::try_from(init_node) {
+          Ok(e) => Some(e),
+          Err(()) => unimplemented!("{:?}", k),
+        }
+      }
+    }
   }
 }
 
@@ -738,9 +760,21 @@ impl traits::VarDecl for VarDecl {
 
   maybe_gat_accessor!(pat, _pat, IdentPat, IdentPat);
 
-  // fn init(&self) -> Option<Expr> {
-  //   unimplemented!()
-  // }
+  #[cfg(feature = "gat")]
+  fn init(&self) -> Option<Expr> {
+    self._init()
+  }
+
+  #[cfg(not(feature = "gat"))]
+  fn init<'r>(&'r self) -> Option<Box<dyn core::ops::Deref<Target = Expr> + 'r>> {
+    match self._init() {
+      None => None,
+      Some(init) => {
+        let b: Box<Expr> = Box::new(init);
+        Some(b)
+      }
+    }
+  }
 }
 
 /// Represents an expression backed by a concrete syntax node.
@@ -1250,9 +1284,10 @@ impl TryFrom<SyntaxNode> for IdentPat {
 }
 
 impl traits::IdentPat for IdentPat {
-  fn name(&self) -> &str {
-    unimplemented!()
-    // self.syntax.first_token().unwrap().text().as_str()
+  fn name(&self) -> Cow<str> {
+    let token = trim_paren(self.syntax.clone()).first_token().unwrap();
+    let text = token.text().as_str();
+    Cow::Owned(text.to_string())
   }
 }
 
@@ -1479,6 +1514,6 @@ mod tests {
 
   #[test]
   fn test_syntax_kind_variant_count() {
-    assert_eq!(SyntaxKind::VARIANT_COUNT, 78);
+    assert_eq!(SyntaxKind::VARIANT_COUNT, 79);
   }
 }
